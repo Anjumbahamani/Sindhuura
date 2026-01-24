@@ -20,7 +20,9 @@ import {
   addSuccessStory,
   deleteSuccessStory,
 } from "../../../services/auth.service";
-
+import { LuCrown } from "react-icons/lu";
+import { FiEye } from "react-icons/fi";
+import { getMembershipFromProfile } from "../../../utils/membership";
 const formatHeight = (h) => {
   if (!h) return "";
   const [feetStr, inchStr] = String(h).split(".");
@@ -50,6 +52,16 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [membership, setMembership] = useState({
+    type: "free",
+    isPremium: false,
+    planName: null,
+    planLimit: 0,
+    contactViewed: 0,
+    contactRemaining: 0,
+    expiryDate: null,
+  });
+
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -59,6 +71,7 @@ const UserProfile = () => {
   const [imagesLoading, setImagesLoading] = useState(false);
   const [imageError, setImageError] = useState("");
   const [deleting, setDeleting] = useState(false);
+
   // Editable form state
   const [form, setForm] = useState({
     user: { name: "", address: "" },
@@ -91,6 +104,10 @@ const UserProfile = () => {
         setData(resp);
 
         if (resp) {
+          // NEW: derive membership info
+          const m = getMembershipFromProfile(resp);
+          setMembership(m);
+
           // Initialise editable form from response
           setForm({
             user: {
@@ -356,8 +373,8 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-soft pb-20">
-      <div className="max-w-md mx-auto min-h-screen bg-soft pb-20">
+    <div className="min-h-screen bg-white pb-20">
+      <div className="max-w-md mx-auto min-h-screen bg-white pb-20">
         {/* HEADER */}
         <header className="flex items-center gap-3 px-4 py-3 shadow-sm bg-white">
           <button
@@ -389,6 +406,10 @@ const UserProfile = () => {
 
           {!loading && !error && data && (
             <>
+              <MembershipCard
+                membership={membership}
+                onUpgradeClick={() => navigate("/home")} // or navigate to your "Prime" tab page
+              />
               {/* IMAGE BLOCK */}
 
               <section className="rounded-3xl bg-[#F5F7FA] overflow-hidden shadow-sm h-64">
@@ -465,8 +486,14 @@ const UserProfile = () => {
 
               {/* LOCATION / OCCUPATION / EDUCATION (READ ONLY) */}
               <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-2">
+                <p className="text-[10px] text-red-500 font-semibold">
+                  Profile ID :{" "}
+                  <span className="text-gray-950">{user.unique_id}</span>
+                </p>
+
                 <div className="flex items-center gap-2">
                   <FiMapPin className="w-3 h-3 text-primary" />
+
                   <p className="text-gray-700">
                     {[profile.city, profile.state, profile.country]
                       .filter(Boolean)
@@ -487,6 +514,130 @@ const UserProfile = () => {
                     {profile.education || "Education not specified"}
                   </p>
                 </div>
+              </section>
+              <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-2">
+                <p className="text-sm font-semibold text-navy mb-1">
+                  Education & Career
+                </p>
+
+                <p>
+                  <b>Degree:</b> {profile.course_degree || "-"}
+                </p>
+                <p>
+                  <b>College:</b> {profile.college || "-"}
+                </p>
+                <p>
+                  <b>Passing Year:</b> {profile.passing_year || "-"}
+                </p>
+                <p>
+                  <b>Occupation:</b> {profile.occupation || "-"}
+                </p>
+                <p>
+                  <b>Annual Income:</b> ₹ {profile.annual_income || "-"}
+                </p>
+              </section>
+              <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-2">
+                <p className="text-sm font-semibold text-navy mb-1">
+                  Lifestyle & Interests
+                </p>
+
+                {lifestyle?.music_genres?.length > 0 && (
+                  <p>
+                    <b>Music:</b>{" "}
+                    {lifestyle.music_genres.map((m) => m.name).join(", ")}
+                  </p>
+                )}
+
+                {lifestyle?.music_activities?.length > 0 && (
+                  <p>
+                    <b>Music Activities:</b>{" "}
+                    {lifestyle.music_activities.map((m) => m.name).join(", ")}
+                  </p>
+                )}
+
+                {lifestyle?.movie_tv_genres?.length > 0 && (
+                  <p>
+                    <b>Movies/TV:</b>{" "}
+                    {lifestyle.movie_tv_genres.map((m) => m.name).join(", ")}
+                  </p>
+                )}
+
+                {lifestyle?.reading_preferences?.length > 0 && (
+                  <p>
+                    <b>Reading:</b>{" "}
+                    {lifestyle.reading_preferences
+                      .map((r) => r.name)
+                      .join(", ")}
+                  </p>
+                )}
+
+                {lifestyle?.spoken_languages && (
+                  <p>
+                    <b>Languages:</b> {lifestyle.spoken_languages}
+                  </p>
+                )}
+
+                {lifestyle?.eating_habits && (
+                  <p>
+                    <b>Food:</b> {lifestyle.eating_habits}
+                  </p>
+                )}
+
+                <p>
+                  <b>Cooking:</b> {lifestyle?.cooking ? "Yes" : "No"}
+                </p>
+              </section>
+              <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-2">
+                <p className="text-sm font-semibold text-navy mb-1">
+                  Family Details
+                </p>
+
+                <p>
+                  <b>Family Status:</b> {profile.family_status || "-"}
+                </p>
+                <p>
+                  <b>Family Worth:</b> ₹ {profile.family_worth || "-"}
+                </p>
+                <p>
+                  <b>Mother Tongue:</b> {profile.mother_tongue || "-"}
+                </p>
+                <p>
+                  <b>Physical Status:</b> {profile.physical_status || "-"}
+                </p>
+
+                {profile.children_count !== null && (
+                  <p>
+                    <b>Children:</b> {profile.children_count}
+                  </p>
+                )}
+
+                {profile.willing_inter_caste !== null && (
+                  <p>
+                    <b>Inter-caste:</b>{" "}
+                    {profile.willing_inter_caste ? "Willing" : "Not willing"}
+                  </p>
+                )}
+              </section>
+              <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-2">
+                <p className="text-sm font-semibold text-navy mb-1">
+                  Birth & Horoscope
+                </p>
+
+                <p>
+                  <b>Date of Birth:</b> {profile.date_of_birth}
+                </p>
+                <p>
+                  <b>Time of Birth:</b> {lifestyle?.time_of_birth || "-"}
+                </p>
+                <p>
+                  <b>Place of Birth:</b> {lifestyle?.place_of_birth || "-"}
+                </p>
+                <p>
+                  <b>Nakshatra:</b> {lifestyle?.nakshatra || "-"}
+                </p>
+                <p>
+                  <b>Rashi:</b> {lifestyle?.rashi || "-"}
+                </p>
               </section>
 
               {/* EDITABLE BASIC DETAILS */}
@@ -785,7 +936,7 @@ const UserProfile = () => {
                     onChange={(e) =>
                       setStoryForm((prev) => ({
                         ...prev,
-                        wedding_date: e.target.value, 
+                        wedding_date: e.target.value,
                       }))
                     }
                     className="w-full border rounded-xl px-3 py-2 text-[11px] bg-white text-gray-800 focus:ring-1 focus:ring-primary focus:outline-none"
@@ -868,5 +1019,183 @@ const LabeledInput = ({ label, value, onChange, disabled }) => (
     />
   </div>
 );
+const FREE_CONTACT_LIMIT = 5;
 
+const MembershipCard = ({ membership, onUpgradeClick }) => {
+  const {
+    isPremium,
+    planName,
+    planLimit,
+    contactViewed,
+    contactRemaining,
+    expiryDate,
+  } = membership;
+
+  const expiryText = expiryDate
+    ? expiryDate.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : null;
+
+  // Compute simple numbers for display
+  const used = contactViewed || 0;
+  const totalForPremium =
+    planLimit || (contactViewed || 0) + (contactRemaining || 0);
+  const total = isPremium ? totalForPremium : FREE_CONTACT_LIMIT;
+  const remaining = isPremium
+    ? contactRemaining
+    : Math.max(0, FREE_CONTACT_LIMIT - used);
+  const progressPercent = total > 0 ? Math.min(100, (used / total) * 100) : 0;
+
+  // ------------------- FREE TRIAL UI -------------------
+  if (!isPremium) {
+    return (
+      <section className="rounded-2xl bg-gradient-to-r from-[#FFF7E9] via-[#FFF9F1] to-[#FFFFFF] border border-[#FFE0B2] px-4 py-3 text-[11px] shadow-sm">
+        {/* Top row: label + status pill */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-[#FFE7C2] flex items-center justify-center">
+              <FiEye className="w-3.5 h-3.5 text-[#B36A1E]" />
+            </div>
+            <div>
+              <p className="text-[12px] font-semibold text-navy">
+                Membership: Free Trial
+              </p>
+              <p className="text-[10px] text-gray-600">
+                Limited access to contacts & chat.
+              </p>
+            </div>
+          </div>
+
+          <span className="px-2 py-0.5 rounded-full bg-white text-[10px] font-semibold text-[#B36A1E] border border-[#F5C58B]">
+            Free Trial
+          </span>
+        </div>
+
+        {/* Contacts info */}
+        <div className="mt-1">
+          <p className="text-[10px] text-gray-700 mb-1 font-medium">
+            Contact reveal attempts
+          </p>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] text-gray-700">
+              Used: <span className="font-semibold">{used}</span> /{" "}
+              <span className="font-semibold">{FREE_CONTACT_LIMIT}</span>
+            </span>
+            <span className="text-[10px] text-gray-700">
+              Remaining: <span className="font-semibold">{remaining}</span>
+            </span>
+          </div>
+          <div className="w-full h-1.5 rounded-full bg-gray-200 overflow-hidden">
+            <div
+              className="h-full bg-primary"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <p className="text-[10px] text-gray-500 mt-1">
+            You have <span className="font-semibold">5 lifetime attempts</span>{" "}
+            to reveal contacts. After that, you’ll need to upgrade to view more
+            contact details.
+          </p>
+        </div>
+
+        {/* Upgrade message */}
+        <div className="mt-2 rounded-2xl bg-white/80 border border-[#FAD1E5] px-3 py-2">
+          <p className="text-[10px] text-gray-700">
+            Upgrade to Premium to unlock{" "}
+            <span className="font-semibold">
+              priority visibility, premium chat, and higher chances of
+              responses.
+            </span>
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={onUpgradeClick}
+          className="mt-2 w-full bg-primary text-white py-2.5 rounded-full text-[12px] font-semibold shadow hover:bg-primary/90 active:scale-[0.99] transition"
+        >
+          View Premium Plans
+        </button>
+      </section>
+    );
+  }
+
+  // ------------------- PREMIUM UI -------------------
+  return (
+    <section className="rounded-2xl bg-gradient-to-r from-[#FFE6F4] via-[#FFF2DD] to-[#FFFFFF] border border-[#F8C3E8] px-4 py-3 text-[11px] shadow-sm">
+      {/* Top row: label + plan chip */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-sm">
+            <LuCrown className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <p className="text-[12px] font-semibold text-navy">
+              Premium Member
+            </p>
+            <p className="text-[10px] text-gray-600">
+              Plan:{" "}
+              <span className="font-semibold">
+                {planName?.toUpperCase() || "PREMIUM"}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <span className="px-2 py-0.5 rounded-full bg-white text-[10px] font-semibold text-primary border border-primary/30">
+          Active
+        </span>
+      </div>
+
+      {/* Contacts stats chips */}
+      <div className="flex items-center flex-wrap gap-2 mb-2">
+        <div className="px-2.5 py-1 rounded-full bg-white/80 border border-white text-[10px] text-gray-800 flex items-center gap-1">
+          <FiEye className="w-3.5 h-3.5 text-primary" />
+          <span>
+            Total contacts:{" "}
+            <span className="font-semibold">{total || "-"}</span>
+          </span>
+        </div>
+        <div className="px-2.5 py-1 rounded-full bg-white/80 border border-white text-[10px] text-gray-800">
+          Remaining: <span className="font-semibold">{remaining}</span>
+        </div>
+        {expiryText && (
+          <div className="px-2.5 py-1 rounded-full bg-white/70 border border-white text-[10px] text-gray-700">
+            Valid till: <span className="font-semibold">{expiryText}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Progress bar */}
+      {total > 0 && (
+        <div className="mb-1">
+          <div className="w-full h-1.5 rounded-full bg-gray-200 overflow-hidden">
+            <div
+              className="h-full bg-primary"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <p className="text-[10px] text-gray-600 mt-1">
+            You’ve used{" "}
+            <span className="font-semibold">
+              {used}/{total}
+            </span>{" "}
+            contact views in this plan.
+          </p>
+        </div>
+      )}
+
+      <p className="text-[10px] text-gray-700 mt-1">
+        As a Premium member, you have extended contact access and{" "}
+        <span className="font-semibold">
+          full chat with compatible premium matches
+        </span>{" "}
+        on Sindhuura.
+      </p>
+    </section>
+  );
+};
 export default UserProfile;

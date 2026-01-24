@@ -1,15 +1,31 @@
+// src/pages/Messages/Messages.jsx
 import React, { useEffect, useState } from "react";
 import BottomNav from "../../components/BottomNav";
+import { useNavigate } from "react-router-dom";
+import { getUserProfile } from "../../services/auth.service";
+import { getMembershipFromProfile } from "../../utils/membership";
+import { getChatMode } from "../../utils/chatPermissions";
 
 const Messages = () => {
-  // IMPORTANT: initial value must be []
+  const navigate = useNavigate();
+
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
 
+  const [membership, setMembership] = useState({
+    type: "free_trial",
+    isPremium: false,
+    planName: null,
+    planLimit: 0,
+    contactViewed: 0,
+    contactRemaining: 0,
+    expiryDate: null,
+  });
+
   useEffect(() => {
-    const fetchChatRooms = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
         setError("");
@@ -19,12 +35,25 @@ const Messages = () => {
           throw new Error("Please log in to view messages.");
         }
 
-        const res = await fetch("http://192.168.1.16:8000/api/chat/chat-rooms/", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // adjust if needed
-          },
-        });
+        // 1) Current user profile → membership
+        const profileRes = await getUserProfile(token);
+        const profile = profileRes.response;
+        const m = getMembershipFromProfile(profile);
+        console.log("DEBUG membership:", m);
+        setMembership(m);
+
+        // 2) Chat rooms
+        const res = await fetch(
+          "https://admin.sindhuura.com/api/chat/chat-rooms/",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("DEBUG chat-rooms status:", res.status);
 
         if (res.status === 401) {
           throw new Error("Session expired. Please log in again.");
@@ -35,27 +64,56 @@ const Messages = () => {
         }
 
         const json = await res.json();
+        console.log("DEBUG chat-rooms json:", json);
 
         if (!json.status) {
           throw new Error(json.message || "Failed to fetch chat rooms");
         }
 
-        // IMPORTANT: always store an array
-        const data = Array.isArray(json.data) ? json.data : [];
-        setRooms(data);
+        // API returns `response: [...]` not `data`
+        const rawList = Array.isArray(json.response) ? json.response : [];
+        console.log("DEBUG rawList:", rawList);
+
+        // Map API shape -> internal room shape
+        const base = "https://admin.sindhuura.com";
+        const origin = base.replace(/\/+$/, "");
+
+        const mappedRooms = rawList.map((item) => {
+          const profile =
+            item.profile_image && item.profile_image.startsWith("http")
+              ? item.profile_image
+              : item.profile_image
+              ? `${origin}${item.profile_image}`
+              : null;
+
+          return {
+            id: item.chat_room_id, // room id
+            other_user_id: item.user_id, // other user's id
+            other_user_name: item.name, // display name
+            other_user_profile: profile, // avatar URL
+            last_message: item.last_message,
+            last_message_time: item.last_message_time,
+            // derive membership: true => "premium", false => "free_trial"
+            other_user_membership: item.is_subscribed
+              ? "premium"
+              : "free_trial",
+          };
+        });
+
+        console.log("DEBUG mappedRooms:", mappedRooms);
+        setRooms(mappedRooms);
       } catch (err) {
+        console.error("fetchData error:", err);
         setError(err.message || "Something went wrong");
-        // In case of error, ensure rooms is an array
         setRooms([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchChatRooms();
+    fetchData();
   }, []);
 
-  // Safe filtered list
   const filteredRooms = Array.isArray(rooms)
     ? rooms.filter((room) => {
         if (!search.trim()) return true;
@@ -65,6 +123,39 @@ const Messages = () => {
         return name.includes(q) || last.includes(q);
       })
     : [];
+
+  const handleOpenRoom = (room) => {
+    // backend should send: other_user_membership = "premium" | "free_trial" | "none"
+    const otherType = room.other_user_membership || "free_trial";
+
+    const mode = getChatMode(membership.type, otherType);
+
+    if (mode === "none") {
+      if (membership.type === "premium") {
+        alert(
+          `${room.other_user_name} is on a free plan. Chat is not allowed between Premium and Free users.`
+        );
+      } else {
+        alert(
+          `This member is Premium. Upgrade your plan to start chatting with Premium members.`
+        );
+      }
+      return;
+    }
+
+    // navigate to ChatRoom with mode + other user info
+    navigate(`/messages/${room.id}`, {
+      state: {
+        mode,
+        otherUser: {
+          id: room.other_user_id,
+          name: room.other_user_name,
+          profile: room.other_user_profile,
+          membership: otherType,
+        },
+      },
+    });
+  };
 
   return (
     <>
@@ -121,7 +212,7 @@ const Messages = () => {
                   key={room.id}
                   className="chat-item"
                   type="button"
-                  onClick={() => console.log("Open room", room.id)}
+                  onClick={() => handleOpenRoom(room)}
                 >
                   <div className="chat-avatar-wrapper">
                     <img

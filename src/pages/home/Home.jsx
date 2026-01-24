@@ -14,6 +14,7 @@ import {
   FiMessageCircle,
   FiStar,
   FiUsers,
+  FiCalendar,
 } from "react-icons/fi";
 import { LuCrown } from "react-icons/lu";
 import {
@@ -32,6 +33,7 @@ import {
   searchMatches,
 } from "../../services/match.service";
 import { FiLogOut } from "react-icons/fi";
+import { getMembershipFromProfile } from "../../utils/membership";
 
 const matches = [
   { id: 1, name: "Rahul, 28", city: "Bengaluru" },
@@ -82,6 +84,15 @@ const Home = () => {
   const [recommendations, setRecommendations] = useState([]);
   const [showUploadSheet, setShowUploadSheet] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
+  const [membership, setMembership] = useState({
+    type: "free_trial",
+    isPremium: false,
+    planName: null,
+    planLimit: 0,
+    contactViewed: 0,
+    contactRemaining: 0,
+    expiryDate: null,
+  });
   const [stories, setStories] = useState([]);
   const [storiesLoading, setStoriesLoading] = useState(false);
   const [storiesError, setStoriesError] = useState("");
@@ -140,7 +151,13 @@ const Home = () => {
         if (!token) return;
 
         const res = await getUserProfile(token);
-        setUserProfile(res.response || null);
+        const profile = res.response || null;
+        setUserProfile(profile);
+
+        if (profile) {
+          const m = getMembershipFromProfile(profile);
+          setMembership(m);
+        }
       } catch (err) {
         console.error("Failed to load user profile:", err);
       }
@@ -225,15 +242,29 @@ const Home = () => {
     const loadEvents = async () => {
       try {
         const token = localStorage.getItem("token");
+
+        // Only premium users (and logged-in) can load events
+        if (!token || !membership.isPremium) {
+          setEvents([]);
+          return;
+        }
+
+        setEventsLoading(true);
+        setEventsError("");
+
         const res = await getEvents(token);
         setEvents(res?.response || []);
       } catch (err) {
         console.error("Failed to fetch events:", err);
+        setEventsError("Unable to load events right now.");
         setEvents([]);
+      } finally {
+        setEventsLoading(false);
       }
     };
+
     loadEvents();
-  }, []);
+  }, [membership.isPremium]);
 
   // auto scroll
   useEffect(() => {
@@ -498,7 +529,7 @@ const Home = () => {
                     <span>
                       {userProfile?.user?.name
                         ? userProfile.user.name[0].toUpperCase()
-                        : "S"}
+                        : "User"}
                     </span>
                   )}
                 </div>
@@ -523,12 +554,32 @@ const Home = () => {
                   {userProfile?.mother_tongue || "Mother tongue not set"}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[11px] text-gray-500">
-                    {userProfile ? "Member" : "Guest"}
+                  <span className="text-[11px] text-gray-500 flex items-center gap-1">
+                    {userProfile ? (
+                      membership.isPremium ? (
+                        <>
+                          <LuCrown className="w-3.5 h-3.5 text-rose-600" />
+                          <span className="text-rose-600">
+                            {(membership.planName || "Premium") + " Member"}
+                          </span>
+                        </>
+                      ) : (
+                        "Free Trial Member"
+                      )
+                    ) : (
+                      "Guest"
+                    )}
                   </span>
-                  <button className="text-[10px] px-2 py-0.5 rounded-full border border-[#F5C58B] bg-[#FFF2DD] text-[#B36A1E] font-semibold">
-                    Upgrade
-                  </button>
+
+                  {!membership.isPremium && userProfile && (
+                    <button
+                      type="button"
+                      onClick={() => setMembershipTab("prime")}
+                      className="text-[10px] px-2 py-0.5 rounded-full border border-[#F5C58B] bg-[#FFF2DD] text-[#B36A1E] font-semibold"
+                    >
+                      Upgrade
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -679,6 +730,7 @@ const Home = () => {
               eventsError={eventsError}
               eventsLoading={eventsLoading}
               events={events}
+              membership={membership}
               onEventClick={(event) => {
                 setSelectedEvent(event);
                 setShowEventModal(true);
@@ -745,6 +797,7 @@ const RegularHomeSections = ({
   events = [],
   onEventClick,
   onStoryClick,
+  membership,
 }) => (
   <>
     {/* COMPLETE YOUR PROFILE SECTION */}
@@ -786,7 +839,7 @@ const RegularHomeSections = ({
           <h2 className="text-sm font-semibold text-navy">
             Daily Recommendations
           </h2>
-          <p className="text-[11px] text-gray-500">
+          <p className="text-[11px] mt-1 text-gray-500">
             Recommended matches for today
           </p>
         </div>
@@ -825,75 +878,106 @@ const RegularHomeSections = ({
       <div className="flex items-start justify-between mb-2">
         <div>
           <h2 className="text-sm font-semibold text-navy">Upcoming Events</h2>
-          <p className="text-[11px] text-gray-500">
+          <p className="text-[11px] mt-1 text-gray-500">
             Discover exclusive Sindhuurra meet‑ups & experiences
           </p>
         </div>
       </div>
 
-      {eventsLoading && (
-        <p className="text-center text-[12px] text-gray-500">Loading events…</p>
-      )}
-      {eventsError && (
-        <p className="text-center text-[12px] text-red-500">{eventsError}</p>
-      )}
-
-      {!eventsLoading && events.length === 0 && !eventsError && (
-        <p className="text-center text-[12px] text-gray-500">
-          No upcoming events listed right now.
-        </p>
-      )}
-
-      {/* EVENTS CAROUSEL SECTION */}
-      {events.length > 0 && (
-        <section className="px-0 mt-3">
-          <div className="relative w-full h-48 rounded-2xl overflow-hidden shadow-sm">
-            {events.map((ev, i) => (
-              <div
-                onClick={() => onEventClick?.(ev)}
-                className={`absolute inset-0 cursor-pointer transition-opacity duration-700 ${
-                  i === eventIndex ? "opacity-100" : "opacity-0"
-                }`}
-              >
-                {/* Image */}
-                <img
-                  src={ev.image}
-                  alt={ev.event_name}
-                  className="w-full h-full object-cover"
-                />
-
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-black/40 flex flex-col justify-end p-3 text-white">
-                  <p className="text-sm font-semibold">{ev.event_name}</p>
-                  <p className="text-[11px] text-gray-200">
-                    {ev.event_datetime_display}
-                  </p>
-                  <p className="text-[11px] text-gray-200">
-                    {ev.venue} • {ev.city}
-                  </p>
-                  <p className="text-[10px] line-clamp-1 opacity-90">
-                    {ev.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-
-            {/* dots */}
-            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
-              {events.map((_, i) => (
-                <span
-                  key={i}
-                  className={`w-2 h-2 rounded-full ${
-                    i === eventIndex ? "bg-primary" : "bg-white/70"
-                  }`}
-                />
-              ))}
+      {/* Free-trial / non-premium: show upgrade text only */}
+      {!membership?.isPremium && (
+        <div className="mt-5 rounded-2xl bg-[#f8efe3] border border-[#FFD9A5] px-4 py-4 text-center">
+          {/* Icon */}
+          <div className="flex justify-center mb-2">
+            <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center">
+              <FiCalendar className="w-5 h-5 text-[#B36A1E]" />
             </div>
           </div>
-        </section>
+
+          {/* Title */}
+          <p className="text-sm font-semibold text-navy mb-1">
+            Events are a Premium feature
+          </p>
+
+          {/* Description */}
+          <p className="text-[11px] text-gray-700 leading-relaxed">
+            Upgrade to a Premium plan to view and register for upcoming
+            Sindhuura community events, meet-ups and experiences.
+          </p>
+        </div>
+      )}
+      {/* Premium: show real events list */}
+      {membership?.isPremium && (
+        <>
+          {eventsLoading && (
+            <p className="text-center text-[12px] text-gray-500">
+              Loading events…
+            </p>
+          )}
+          {eventsError && (
+            <p className="text-center text-[12px] text-red-500">
+              {eventsError}
+            </p>
+          )}
+
+          {!eventsLoading && events.length === 0 && !eventsError && (
+            <p className="text-center text-[12px] text-gray-500">
+              No upcoming events listed right now.
+            </p>
+          )}
+
+          {/* EVENTS CAROUSEL SECTION */}
+          {events.length > 0 && (
+            <section className="px-0 mt-3">
+              <div className="relative w-full h-48 rounded-2xl overflow-hidden shadow-sm">
+                {events.map((ev, i) => (
+                  <div
+                    key={ev.id || i}
+                    onClick={() => onEventClick?.(ev)}
+                    className={`absolute inset-0 cursor-pointer transition-opacity duration-700 ${
+                      i === eventIndex ? "opacity-100" : "opacity-0"
+                    }`}
+                  >
+                    {/* Image */}
+                    <img
+                      src={ev.image}
+                      alt={ev.event_name}
+                      className="w-full h-full object-cover"
+                    />
+
+                    {/* Overlay */}
+                    <div className="absolute inset-0 bg-black/40 flex flex-col justify-end p-3 text-white">
+                      <p className="text-sm font-semibold">{ev.event_name}</p>
+                      <p className="text-[11px] text-gray-200">
+                        {ev.event_datetime_display}
+                      </p>
+                      <p className="text-[11px] text-gray-200">
+                        {ev.venue} • {ev.city}
+                      </p>
+                      <p className="text-[10px] line-clamp-1 opacity-90">
+                        {ev.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+
+                {/* dots */}
+                <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
+                  {events.map((_, i) => (
+                    <span
+                      key={i}
+                      className={`w-2 h-2 rounded-full ${
+                        i === eventIndex ? "bg-primary" : "bg-white/70"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+        </>
       )}
     </section>
-
     {/* SUCCESS STORIES */}
     <section className="bg-white px-4 py-4 mt-3">
       <div className="flex items-start justify-between mb-2">
@@ -901,7 +985,7 @@ const RegularHomeSections = ({
           <h2 className="text-sm font-semibold text-navy">
             Happy Success Stories
           </h2>
-          <p className="text-[11px] text-gray-500">
+          <p className="text-[11px] mt-1 text-gray-500">
             Couples who found love through Sindhuurra
           </p>
         </div>

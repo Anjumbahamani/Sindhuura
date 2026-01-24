@@ -591,6 +591,11 @@ const ProfileCard = ({
     religion,
     caste,
   } = profile;
+  const isVerified =
+    profile.is_verified ??
+    profile?.profile?.is_verified ??
+    profile.is_active ??
+    false;
 
   const heightText = height ? formatHeight(height) : "";
   const location = [city, state].filter(Boolean).join(", ");
@@ -630,10 +635,20 @@ const ProfileCard = ({
 
       {/* DETAILS */}
       <div className="px-4 pt-3 pb-1">
-        <div className="flex items-center gap-1 text-[11px] text-[#1D7DEA] mb-1">
-          <FiCheckCircle className="w-3 h-3" />
-          <span>Verified</span>
-        </div>
+        <div className="flex items-center gap-1 text-[11px] mb-1">
+  {isVerified ? (
+    <>
+      <FiCheckCircle className="w-3 h-3 text-[#1D7DEA]" />
+      <span className="text-[#1D7DEA]">Verified</span>
+    </>
+  ) : (
+    <>
+      <FiCheckCircle className="w-3 h-3 text-gray-400" />
+      <span className="text-gray-400">Not verified yet</span>
+    </>
+  )}
+</div>
+
 
         <p className="text-base font-semibold text-navy">{name || "Member"}</p>
 

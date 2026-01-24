@@ -128,7 +128,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiBookOpen, FiClock, FiEye, FiSearch } from "react-icons/fi";
 import BottomNav from "../../components/BottomNav";
-import { getBlogs,searchBlogs, } from "../../services/blog.service";
+import { getBlogs, searchBlogs } from "../../services/blog.service";
 
 const Blogs = () => {
   const navigate = useNavigate();
@@ -184,34 +184,32 @@ const Blogs = () => {
               type="text"
               placeholder="Search blogs..."
               value={query}
-          onChange={(e) => {
-  const value = e.target.value;
-  setQuery(value);
+              onChange={(e) => {
+                const value = e.target.value;
+                setQuery(value);
 
-  if (searchTimer.current) {
-    clearTimeout(searchTimer.current);
-  }
+                if (searchTimer.current) {
+                  clearTimeout(searchTimer.current);
+                }
 
-  searchTimer.current = setTimeout(async () => {
-    try {
-      setLoading(true);
-      const res = await searchBlogs(value, token);
-      const list =
-        res?.response?.results ||
-        res?.response?.response?.results ||
-        res?.results ||
-        [];
-      setBlogs(list);
-      setFeatured(list.filter((b) => b.is_featured));
-    } catch (err) {
-      console.error("Search failed", err);
-    } finally {
-      setLoading(false);
-    }
-  }, 500);
-}}
-
-
+                searchTimer.current = setTimeout(async () => {
+                  try {
+                    setLoading(true);
+                    const res = await searchBlogs(value, token);
+                    const list =
+                      res?.response?.results ||
+                      res?.response?.response?.results ||
+                      res?.results ||
+                      [];
+                    setBlogs(list);
+                    setFeatured(list.filter((b) => b.is_featured));
+                  } catch (err) {
+                    console.error("Search failed", err);
+                  } finally {
+                    setLoading(false);
+                  }
+                }, 500);
+              }}
               className="flex-1 border-none outline-none text-[13px] bg-transparent"
             />
           </div>
@@ -287,7 +285,7 @@ const Blogs = () => {
             ))}
           </div>
 
-          {!loading && blogs.length === 0 && !error && (
+          {/* {!loading && blogs.length === 0 && !error && (
             <div className="flex flex-col items-center justify-center mt-10 text-center text-gray-500">
               <div className="w-14 h-14 rounded-full bg-[#FFF7E9] flex items-center justify-center mb-3 shadow-sm">
                 <FiBookOpen className="w-7 h-7 text-[#B36A1E]" />
@@ -299,7 +297,7 @@ const Blogs = () => {
                 Check back soon for new stories from the Sindhuurra team.
               </p>
             </div>
-          )}
+          )} */}
         </section>
       </div>
 
@@ -334,7 +332,7 @@ const FeaturedCard = ({ blog, onClick }) => (
         <p className="text-[12px] text-gray-600 line-clamp-2 mb-3">
           {blog.short_description}
         </p>
-        
+
         <div className="flex items-center justify-between text-[11px] text-gray-500 mb-3">
           <span className="flex items-center gap-1">
             <FiClock className="w-3 h-3" /> {blog.created_at_ist}
@@ -346,7 +344,6 @@ const FeaturedCard = ({ blog, onClick }) => (
         <button className="w-40 bg-primary text-white text-[11px] font-semibold py-2.5 rounded-full shadow hover:bg-primary/90 transition mb-3">
           Read More
         </button>
-        
       </div>
     </div>
   </div>

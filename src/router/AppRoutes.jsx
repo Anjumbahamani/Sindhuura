@@ -16,6 +16,7 @@ import WelcomeScr from "../pages/auth/Register/steps/WelcomScr";
 import TermsAndConditions from "../pages/home/Term&AbtTeam/TermAndConditions";
 import AboutTeam from "../pages/home/Term&AbtTeam/AboutTeam";
 import InterestDetails from "../pages/home/Interests/InterestDetails";
+import ChatRoom from "../pages/home/Messages/ChatRoom";
 
 const AppRoutes = () => {
   return (
@@ -38,6 +39,7 @@ const AppRoutes = () => {
       <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
       <Route path="/about-team" element={<AboutTeam />} />
       <Route path="/interests/:id" element={<InterestDetails />} />
+      <Route path="/messages/:roomId" element={<ChatRoom />} />
     </Routes>
   );
 };
