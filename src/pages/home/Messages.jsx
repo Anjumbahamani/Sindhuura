@@ -45,6 +45,7 @@ const Messages = () => {
         // 2) Chat rooms
         const res = await fetch(
           "https://admin.sindhuura.com/api/chat/chat-rooms/",
+          //  "http://192.168.1.10:8000/api/chat/chat-rooms/",
           {
             headers: {
               "Content-Type": "application/json",
@@ -71,8 +72,17 @@ const Messages = () => {
         }
 
         // API returns `response: [...]` not `data`
-        const rawList = Array.isArray(json.response) ? json.response : [];
-        console.log("DEBUG rawList:", rawList);
+      const rawList = Array.isArray(json.response) ? json.response : [];
+console.log("DEBUG rawList:", rawList);
+rawList.forEach((item) => {
+  console.log(
+    "CHAT ROOM RAW ITEM:",
+    `name=${item.name}`,
+    `user_id=${item.user_id}`,
+    `is_subscribed=${item.is_subscribed}`,
+    item
+  );
+});
 
         // Map API shape -> internal room shape
         const base = "https://admin.sindhuura.com";
@@ -94,9 +104,11 @@ const Messages = () => {
             last_message: item.last_message,
             last_message_time: item.last_message_time,
             // derive membership: true => "premium", false => "free_trial"
-            other_user_membership: item.is_subscribed
+            other_user_membership:
+             item.is_subscribed
               ? "premium"
               : "free_trial",
+              // "premium"
           };
         });
 

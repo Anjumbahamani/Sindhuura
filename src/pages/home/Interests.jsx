@@ -519,8 +519,6 @@ const formatHeight = (h) => {
 
 const SentInterestCard = ({ request }) => {
   const navigate = useNavigate();
-//   console.log("Interest ID:", request.id);
-// console.log("Profile ID:", request.profile?.id);
 
   const { profile, status, created_at } = request;
   const {
@@ -533,7 +531,18 @@ const SentInterestCard = ({ request }) => {
     state,
     religion,
     caste,
+    id: profileId,
+    user: profileUser,
+    user_id: profileUserId,
   } = profile || {};
+
+  // 🔍 Log all possible IDs so we can see what's what
+  console.log("SentInterestCard ids:", {
+    requestId: request.id,
+    profileId,
+    profileUser,
+    profileUserId,
+  });
 
   const heightText = height ? formatHeight(height) : "";
   const location = [city, state].filter(Boolean).join(", ");
@@ -550,18 +559,24 @@ const SentInterestCard = ({ request }) => {
       ? "Declined"
       : status;
 
+  const handleCardClick = () => {
+    // for now, still using profile?.user as you wrote:
+    const userId = profileUser || profileUserId || profileId || request.id;
+    console.log("➡️ Navigating to /interests/", userId);
+    if (!userId) {
+      console.warn("No usable id on request:", request);
+      return;
+    }
+    navigate(`/interests/${userId}`);
+  };
+
   return (
-   <div
-      onClick={() =>navigate(`/interests/${request.profile.id}`)
-
-}
-
-      className="
-        cursor-pointer
-        bg-white rounded-2xl shadow-sm border-l-4 border-red-500
-        px-3 py-3 flex gap-3 items-center
-        hover:shadow-md transition
-      "
+    <div
+      onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Enter" && handleCardClick()}
+      className="cursor-pointer bg-white rounded-2xl shadow-sm border-l-4 border-red-500 px-3 py-3 flex gap-3 items-center hover:shadow-md transition"
     >
       {/* AVATAR */}
       <div className="w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0 bg-[#FFF4EC] flex items-center justify-center">
@@ -733,6 +748,7 @@ const SentInterestCard = ({ request }) => {
 // };
 
 const ReceivedInterestCard = ({ request, onActionComplete }) => {
+  const navigate = useNavigate();
   const { id, profile, status, created_at } = request;
   const {
     profile_image,
@@ -744,6 +760,8 @@ const ReceivedInterestCard = ({ request, onActionComplete }) => {
     state,
     religion,
     caste,
+    user : profileUser,
+    user_id:profileUserId,
   } = profile || {};
 
   const [submitting, setSubmitting] = useState(false);
@@ -757,7 +775,16 @@ const ReceivedInterestCard = ({ request, onActionComplete }) => {
 
   const token = localStorage.getItem("token");
 
+  const handleCardClick =()=>{
+    const userId = profileUser || profileUserId;
+    if (!userId){
+      console.warn("No user id on received interest :",request);
+      return;
+    }
+    navigate(`/interests/${userId}`);
+  }
   const handleAccept = async () => {
+    // e.stopPropagation();
     try {
       setSubmitting(true);
       await acceptRequest(id, token);
@@ -773,6 +800,7 @@ const ReceivedInterestCard = ({ request, onActionComplete }) => {
   };
 
   const handleReject = async () => {
+    e.stopPropagation();
     try {
       setSubmitting(true);
       await rejectRequest(id, token);
@@ -794,7 +822,12 @@ const ReceivedInterestCard = ({ request, onActionComplete }) => {
       : "Declined";
 
   return (
-    <div className="bg-white rounded-3xl shadow-md overflow-hidden">
+    <div className="bg-white rounded-3xl shadow-md overflow-hidden"
+    onClick={handleCardClick}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e)=>e.key==="Enter"&& handleCardClick()}
+    >
       {/* IMAGE */}
       <div className="h-64 bg-gray-200">
         {profile_image ? (

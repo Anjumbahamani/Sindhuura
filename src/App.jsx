@@ -3,18 +3,15 @@ import { BrowserRouter } from "react-router-dom";
 import React from "react";
 import AppRouters from "./router/AppRoutes";
 import { AuthProvider } from "./context/AuthProvider";
+import { NotificationProvider } from "./context/NotificationContext";
 
 function App() {
   return (
-   
-     <AuthProvider>
-      <AppRouters />
+    <AuthProvider>
+      <NotificationProvider>
+        <AppRouters />
+      </NotificationProvider>
     </AuthProvider>
-
-
-    
-
-  
   );
 }
 

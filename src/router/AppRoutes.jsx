@@ -38,7 +38,7 @@ const AppRoutes = () => {
 
       <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
       <Route path="/about-team" element={<AboutTeam />} />
-      <Route path="/interests/:id" element={<InterestDetails />} />
+      <Route path="/interests/:userId" element={<InterestDetails />} />
       <Route path="/messages/:roomId" element={<ChatRoom />} />
     </Routes>
   );

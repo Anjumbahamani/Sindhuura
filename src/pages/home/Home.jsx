@@ -34,6 +34,7 @@ import {
 } from "../../services/match.service";
 import { FiLogOut } from "react-icons/fi";
 import { getMembershipFromProfile } from "../../utils/membership";
+import { useFcmToken } from "../../hooks/useFcmToken";
 
 const matches = [
   { id: 1, name: "Rahul, 28", city: "Bengaluru" },
@@ -48,7 +49,7 @@ function loadRazorpay() {
     if (window.Razorpay) return resolve(true);
 
     const existing = document.querySelector(
-      `script[src="${RAZORPAY_SDK_URL}"]`
+      `script[src="${RAZORPAY_SDK_URL}"]`,
     );
     if (existing) {
       existing.addEventListener("load", () => resolve(true));
@@ -115,6 +116,11 @@ const Home = () => {
   const [showStoryModal, setShowStoryModal] = useState(false);
   const [files, setFiles] = useState([]);
   const [selfie, setSelfie] = useState(null);
+  const { fcmToken, fcmError } = useFcmToken();
+
+  if (fcmError) {
+    console.warn("FCM error:", fcmError);
+  }
 
   const fallbackMatches = matches;
 
@@ -233,7 +239,7 @@ const Home = () => {
     if (!banners.length) return;
     const timer = setInterval(
       () => setBannerIndex((prev) => (prev + 1) % banners.length),
-      4000
+      4000,
     );
     return () => clearInterval(timer);
   }, [banners]);
@@ -271,7 +277,7 @@ const Home = () => {
     if (!events.length) return;
     const t = setInterval(
       () => setEventIndex((prev) => (prev + 1) % events.length),
-      5000 // 5 sec per slide
+      5000, // 5 sec per slide
     );
     return () => clearInterval(t);
   }, [events]);
@@ -305,7 +311,7 @@ const Home = () => {
       const sdkOk = await loadRazorpay();
       if (!sdkOk) {
         alert(
-          "Failed to load Razorpay Checkout. Disable adblock and try again."
+          "Failed to load Razorpay Checkout. Disable adblock and try again.",
         );
         return;
       }
@@ -313,7 +319,7 @@ const Home = () => {
       // 1) Create order on backend
       const orderRes = await createSubscriptionOrder(
         { subscription_id: plan.id },
-        token
+        token,
       );
 
       const orderData = orderRes?.response ?? orderRes;
@@ -359,7 +365,7 @@ const Home = () => {
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
               },
-              token
+              token,
             );
 
             const verifyData = verifyRes?.response ?? verifyRes;
@@ -382,7 +388,7 @@ const Home = () => {
           } catch (e) {
             console.error("verify-payment error:", e);
             alert(
-              "Payment completed but verification failed. Contact support."
+              "Payment completed but verification failed. Contact support.",
             );
           }
         },
@@ -589,7 +595,7 @@ const Home = () => {
               <button className="relative flex items-center justify-center w-9 h-9 rounded-full bg-white shadow-sm">
                 <FiBell className="w-4 h-4 text-navy" />
                 <span className="absolute -top-1 -right-1 bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-full border border-white">
-                  21
+                  1
                 </span>
               </button>
               <button
@@ -919,11 +925,13 @@ const RegularHomeSections = ({
               {eventsError}
             </p>
           )}
-
           {!eventsLoading && events.length === 0 && !eventsError && (
-            <p className="text-center text-[12px] text-gray-500">
-              No upcoming events listed right now.
-            </p>
+            <div className="flex flex-col items-center justify-center text-center py-6">
+              <FiCalendar className="w-6 h-6 text-[#B36A1E] mb-2" />
+              <p className="text-[12px] text-gray-500">
+                No upcoming events listed right now.
+              </p>
+            </div>
           )}
 
           {/* EVENTS CAROUSEL SECTION */}
@@ -1095,7 +1103,7 @@ const PremiumPlansSection = ({ plans, loading, error, onChoosePlan }) => {
   const paidPlans = combinedPlans.filter((p) => p.id !== "free");
 
   const [activePlanId, setActivePlanId] = useState(
-    paidPlans[0]?.id || combinedPlans[0]?.id
+    paidPlans[0]?.id || combinedPlans[0]?.id,
   );
 
   const scrollContainerRef = useRef(null);

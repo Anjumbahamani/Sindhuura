@@ -18,6 +18,7 @@ export const API_ROUTES = {
     ADD_SUCCESS_STORY: `${API_BASE}/api/match/add-success-stories/`,
     MY_SUCCESS_STORY: `${API_BASE}/api/match/my-success-stories/`,
     DELETE_SUCCESS_STORY: `${API_BASE}/api/match/delete-success-story/`,
+    UPDATE_FCM_TOKEN: `${API_BASE}/api/auth/update-fcm-token/`,
   },
   MATCH: {
     MATCHING_PROFILES: `${API_BASE}/api/match/matching-profiles/`,

@@ -148,3 +148,20 @@ export const deleteSuccessStory = async (storyId, token) => {
     },
   });
 };
+
+
+;
+
+
+export async function updateFcmToken(fcmToken, authToken) {
+  return apiClient(API_ROUTES.AUTH.UPDATE_FCM_TOKEN, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",       
+      Authorization: `Bearer ${authToken}`,
+    },
+    body: JSON.stringify({
+      fcm_token: fcmToken,                     
+    }),
+  });
+}
