@@ -35,6 +35,8 @@ export const API_ROUTES = {
     SEARCH_SENT_REQUESTS: `${API_BASE}/api/match/sent-requests/`,
     SEARCH_RECEIVED_REQUESTS: `${API_BASE}/api/match/received-requests/`,
     INTEREST_DETAILS: `${API_BASE}/api/match/details/`,
+    REPORT_USER:`${API_BASE}/api/match/report-user/`,
+    REPORT_REASON:`${API_BASE}/api/match/report-reasons/`
   },
   BLOG: {
     BLOGS: `${API_BASE}/api/auth/blogs/`,
