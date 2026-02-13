@@ -117,7 +117,7 @@ const LifestyleDetailsStep = ({ data, setData, onBack, navigate }) => {
     const finalUniqueId = uniqueId || localStorage.getItem("unique_id") || "SN2026W01";
     console.log("🚀 Navigating to /welcome with uniqueId:", finalUniqueId);
     
-    navigate("/welcome", { 
+    navigate("/welcomescr", { 
       state: { 
         uniqueId: finalUniqueId
       } 

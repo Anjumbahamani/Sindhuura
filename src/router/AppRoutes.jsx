@@ -17,11 +17,17 @@ import TermsAndConditions from "../pages/home/Term&AbtTeam/TermAndConditions";
 import AboutTeam from "../pages/home/Term&AbtTeam/AboutTeam";
 import InterestDetails from "../pages/home/Interests/InterestDetails";
 import ChatRoom from "../pages/home/Messages/ChatRoom";
+import Notifications from "../pages/home/Notification";
+import Onboarding from "../pages/auth/Onboarding";
+import ForgotPassword from "../pages/auth/ForgotPass/ForgotPassword";
+import ResetPassword from "../pages/auth/ForgotPass/ResetPassword";
+import DeleteAccount from "../pages/home/Userprofile/DeleteAccount";
 
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Welcome />} />
+        <Route path="/" element={<Onboarding />} />
+      <Route path="/welcome" element={<Welcome />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<RegisterFlow />} />
       <Route path="/home" element={<Home />} />
@@ -34,12 +40,16 @@ const AppRoutes = () => {
       <Route path="/profile" element={<UserProfile />} />
       {/* <Route path="/blogs" element={<Blogs />} /> */}
       <Route path="/blogs/:blogId" element={<BlogDetail />} />
-      <Route path="/welcome" element={<WelcomeScr />} />
+      <Route path="/welcomescr" element={<WelcomeScr />} />
 
       <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
       <Route path="/about-team" element={<AboutTeam />} />
       <Route path="/interests/:userId" element={<InterestDetails />} />
       <Route path="/messages/:roomId" element={<ChatRoom />} />
+      <Route path="/notifications" element={<Notifications />} />
+      <Route path="/forgotpass" element={<ForgotPassword />} />
+      <Route path="/resetpass" element={<ResetPassword />} />
+      <Route path="/deleteacc" element={<DeleteAccount />} />
     </Routes>
   );
 };

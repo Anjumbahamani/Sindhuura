@@ -1,279 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import BottomNav from "../../components/BottomNav";
-// import {
-//   FiMapPin,
-//   FiCheckCircle,
-//   FiFilter,
-//   FiChevronDown,
-// } from "react-icons/fi";
-// import {
-//   getSentRequests,
-//   getReceivedRequests,
-// } from "../../services/match.service";
-
-// const Interests = () => {
-//   const [activeTab, setActiveTab] = useState("sent"); // "sent" | "received"
-//   const [sentRequests, setSentRequests] = useState([]);
-//   const [receivedRequests, setReceivedRequests] = useState([]);
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState("");
-
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       try {
-//         setLoading(true);
-//         setError("");
-
-//         const token = localStorage.getItem("token");
-//         if (!token) {
-//           setError("Please login to view interests.");
-//           return;
-//         }
-
-//         if (activeTab === "sent") {
-//           const res = await getSentRequests(token);
-//           setSentRequests(res.response || []);
-//         } else {
-//           const res = await getReceivedRequests(token);
-//           setReceivedRequests(res.response || []);
-//         }
-//       } catch (err) {
-//         console.error("Failed to load interests:", err);
-//         setError("Could not load interests. Please try again.");
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchData();
-//   }, [activeTab]);
-
-//   const currentList = activeTab === "sent" ? sentRequests : receivedRequests;
-//   const currentCount = currentList.length;
-
-//   const headerText =
-//     activeTab === "sent"
-//       ? "Profiles you have shown interest in"
-//       : "Profiles who have shown interest in you";
-
-//   return (
-//     <div className="min-h-screen bg-white pb-20">
-//       <div className="max-w-md mx-auto min-h-screen bg-white pb-20">
-//         {/* HEADER */}
-//         <div className="bg-white shadow-sm pb-2">
-//           <div className="px-4 pt-3">
-//             <h1 className="text-lg font-semibold text-navy">Interests</h1>
-//             <p className="text-[11px] text-gray-500">
-//               Manage your sent and received interests
-//             </p>
-//           </div>
-
-//           {/* Tabs as chips */}
-//           <div className="px-4 mt-3 mb-1">
-//             <div className="flex bg-[#F7F7F7] rounded-full p-1 gap-1">
-//               {[
-//                 { id: "sent", label: "Sent" },
-//                 { id: "received", label: "Received" },
-//               ].map((tab) => {
-//                 const isActive = activeTab === tab.id;
-//                 const count =
-//                   tab.id === "sent"
-//                     ? sentRequests.length
-//                     : receivedRequests.length;
-
-//                 return (
-//                   <button
-//                     key={tab.id}
-//                     onClick={() => setActiveTab(tab.id)}
-//                     className={`
-//                       flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5
-//                       rounded-full text-[11px] font-semibold transition
-//                       ${
-//                         isActive
-//                           ? "bg-primary text-white shadow-sm"
-//                           : "bg-white text-gray-600 border border-gray-200"
-//                       }
-//                     `}
-//                   >
-//                     <span>{tab.label}</span>
-//                     <span
-//                       className={`
-//                         text-[10px] px-1.5 py-0.5 rounded-full
-//                         ${
-//                           isActive
-//                             ? "bg-white/15 text-white"
-//                             : "bg-gray-100 text-gray-500"
-//                         }
-//                       `}
-//                     >
-//                       {count}
-//                     </span>
-//                   </button>
-//                 );
-//               })}
-//             </div>
-//           </div>
-
-//           {/* Filter row */}
-//           <div className="px-4 mt-2 mb-2">
-//             <p className="text-[11px] text-gray-500 mb-2">
-//               {currentCount}{" "}
-//               {activeTab === "sent" ? "sent interests" : "received interests"}{" "}
-//               based on your{" "}
-//               <span className="text-primary font-semibold cursor-pointer">
-//                 criteria
-//               </span>
-//             </p>
-//             <div className="flex items-center gap-2 text-[11px]">
-//               <button className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-full border border-gray-300 bg-white">
-//                 <FiFilter className="w-3 h-3" />
-//                 <span>Filter</span>
-//               </button>
-//               {/* <button className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-full border border-gray-300 bg-white">
-//                 Sort by <FiChevronDown className="w-3 h-3" />
-//               </button> */}
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* MAIN CONTENT */}
-//         <main className="px-3 pt-3">
-//           {loading && (
-//             <p className="text-sm text-gray-500 mb-3 px-1">
-//               Loading {activeTab} interests…
-//             </p>
-//           )}
-
-//           {error && <p className="text-sm text-red-500 mb-3 px-1">{error}</p>}
-
-//           <p className="text-[11px] text-gray-500 mb-2 px-1">{headerText}</p>
-
-//           <div className="space-y-3">
-//             {!loading &&
-//               currentList.map((req) => (
-//                 <InterestCard key={req.id} request={req} type={activeTab} />
-//               ))}
-
-//             {!loading && currentList.length === 0 && !error && (
-//               <p className="text-sm text-gray-500 text-center mt-6">
-//                 No {activeTab} interests right now.
-//               </p>
-//             )}
-//           </div>
-//         </main>
-
-//         <BottomNav />
-//       </div>
-//     </div>
-//   );
-// };
-
-// const formatHeight = (h) => {
-//   if (!h) return "";
-//   const [feetStr, inchStr] = String(h).split(".");
-//   const feet = feetStr;
-//   const inches = inchStr || "0";
-//   return `${feet}' ${inches}"`;
-// };
-
-// const InterestCard = ({ request, type }) => {
-//   const { profile, status, created_at } = request;
-//   const {
-//     profile_image,
-//     name,
-//     age,
-//     height,
-//     occupation,
-//     city,
-//     state,
-//     religion,
-//     caste,
-//   } = profile || {};
-
-//   const heightText = height ? formatHeight(height) : "";
-//   const location = [city, state].filter(Boolean).join(", ");
-//   const community = [religion?.name || "", caste?.name || ""]
-//     .filter(Boolean)
-//     .join(" • ");
-
-//   const statusLabel =
-//     status === "pending"
-//       ? "Pending"
-//       : status === "accepted"
-//       ? "Accepted"
-//       : status === "rejected"
-//       ? "Declined"
-//       : status;
-
-//   const metaLabel = type === "sent" ? "Sent on" : "Received on";
-
-//   return (
-//     <div className="bg-white rounded-3xl shadow-md overflow-hidden">
-//       {/* IMAGE */}
-//       <div className="relative">
-//         <div className="h-56 bg-gray-200">
-//           {profile_image ? (
-//             <img
-//               src={profile_image}
-//               alt={name}
-//               className="w-full h-full object-cover"
-//             />
-//           ) : (
-//             <div className="w-full h-full flex items-center justify-center text-navy text-lg font-semibold bg-gradient-to-br from-gray-300 to-gray-200">
-//               {name ? name[0].toUpperCase() : "M"}
-//             </div>
-//           )}
-//         </div>
-//       </div>
-
-//       {/* DETAILS */}
-//       <div className="px-4 pt-3 pb-3">
-//         <div className="flex items-center justify-between mb-1">
-//           <p className="text-base font-semibold text-navy">
-//             {name || "Member"}
-//           </p>
-//           <span
-//             className={`px-2 py-0.5 rounded-full text-[10px] font-semibold
-//               ${
-//                 status === "accepted"
-//                   ? "bg-[#E6F8EF] text-[#1BA34A]"
-//                   : status === "rejected"
-//                   ? "bg-[#FDECEC] text-[#E04B4B]"
-//                   : "bg-[#FFF5E5] text-[#B36A1E]"
-//               }`}
-//           >
-//             {statusLabel}
-//           </span>
-//         </div>
-
-//         <p className="text-[10px] text-gray-500 mb-1">
-//           {metaLabel}: {created_at}
-//         </p>
-
-//         <p className="text-[11px] text-gray-700 leading-snug">
-//           {age && `${age} yrs`} {heightText && ` • ${heightText}`}{" "}
-//           {community && ` • ${community}`}
-//           {occupation && ` • ${mapOccupationLabel(occupation)}`}
-//           {location && ` • ${location}`}
-//         </p>
-//       </div>
-//     </div>
-//   );
-// };
-
-// const mapOccupationLabel = (code) => {
-//   if (!code) return "";
-//   const map = {
-//     software: "Software Professional",
-//     business: "Business",
-//     doctor: "Doctor",
-//     teacher: "Teacher",
-//   };
-//   return map[code] || code;
-// };
-
-// export default Interests;
-
 import React, { useEffect, useState } from "react";
 import BottomNav from "../../components/BottomNav";
 import {
@@ -337,24 +61,55 @@ const Interests = () => {
           return;
         }
 
-        if (activeTab === "sent") {
-          const res = await getSentRequests(token);
-          setSentRequests(res.response || []);
-        } else {
-          const res = await getReceivedRequests(token);
-          setReceivedRequests(res.response || []);
-        }
-      } catch (err) {
-        console.error("Failed to load interests:", err);
-        setError("Could not load interests. Please try again.");
-      } finally {
-        setLoading(false);
-        setSearching(false);
-      }
-    };
+  //       if (activeTab === "sent") {
+  //         const res = await getSentRequests(token);
+  //         setSentRequests(res.response || []);
+  //       } else {
+  //         const res = await getReceivedRequests(token);
+  //         setReceivedRequests(res.response || []);
+  //       }
+  //     } catch (err) {
+  //       console.error("Failed to load interests:", err);
+  //       setError("Could not load interests. Please try again.");
+  //     } finally {
+  //       setLoading(false);
+  //       setSearching(false);
+  //     }
+  //   };
 
-    fetchData();
-  }, [activeTab, searchQuery]);
+  //   fetchData();
+  // }, [activeTab, searchQuery]);
+   const [sentRes, receivedRes] = await Promise.all([
+        getSentRequests(token),
+        getReceivedRequests(token),
+      ]);
+
+      setSentRequests(sentRes.response || []);
+      setReceivedRequests(receivedRes.response || []);
+    } catch (err) {
+      console.error("Failed to load interests:", err);
+      setError("Could not load interests. Please try again.");
+    } finally {
+      setLoading(false);
+      setSearching(false);
+    }
+  };
+
+  fetchData();
+}, [searchQuery]); 
+useEffect(() => {
+  const token = localStorage.getItem("token");
+
+  if (activeTab === "sent") {
+    getSentRequests(token).then((res) =>
+      setSentRequests(res.response || [])
+    );
+  } else {
+    getReceivedRequests(token).then((res) =>
+      setReceivedRequests(res.response || [])
+    );
+  }
+}, [activeTab]);
 
   const currentList = activeTab === "sent" ? sentRequests : receivedRequests;
   const currentCount = currentList.length;

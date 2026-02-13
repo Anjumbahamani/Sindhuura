@@ -165,3 +165,12 @@ export const getInterestDetails = async (id, token) => {
   });
 };
 
+
+export const getNotifications = async (token) => {
+  return apiClient(API_ROUTES.MATCH.NOTIFICATIONS, {
+    method: "GET",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+};

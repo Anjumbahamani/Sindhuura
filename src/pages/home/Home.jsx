@@ -15,6 +15,8 @@ import {
   FiStar,
   FiUsers,
   FiCalendar,
+  FiSliders,
+  FiX,
 } from "react-icons/fi";
 import { LuCrown } from "react-icons/lu";
 import {
@@ -24,6 +26,7 @@ import {
   saveSubscriptionDetails,
   createSubscriptionOrder,
   verifySubscriptionPayment,
+  addSuccessStory,
 } from "../../services/auth.service";
 import {
   getMatchingProfiles,
@@ -35,6 +38,7 @@ import {
 import { FiLogOut } from "react-icons/fi";
 import { getMembershipFromProfile } from "../../utils/membership";
 import { useFcmToken } from "../../hooks/useFcmToken";
+import { FaFacebookF, FaYoutube, FaInstagram, FaTwitter } from "react-icons/fa";
 
 const matches = [
   { id: 1, name: "Rahul, 28", city: "Bengaluru" },
@@ -65,7 +69,7 @@ function loadRazorpay() {
   });
 }
 
-// "1999.00" -> 199900 (paise)
+
 function rupeesToPaise(amountStr) {
   const [r, p = "00"] = String(amountStr).split(".");
   const rupees = r.replace(/[^\d]/g, "") || "0";
@@ -117,6 +121,7 @@ const Home = () => {
   const [files, setFiles] = useState([]);
   const [selfie, setSelfie] = useState(null);
   const { fcmToken, fcmError } = useFcmToken();
+  const [showAddStorySheet, setShowAddStorySheet] = useState(false);
 
   if (fcmError) {
     console.warn("FCM error:", fcmError);
@@ -186,12 +191,14 @@ const Home = () => {
         const list = res.response || [];
 
         const top = list.slice(0, 4).map((p) => {
+          console.log("🔵 Raw profile from backend:", p);
           const name =
             p.name && p.age ? `${p.name}, ${p.age}` : p.name || "Member";
           const city = p.city || p.state || "Unknown";
           const image = p.profile_image || null;
-
-          return { id: p.id, name, city, image };
+          const actualUserId = p.user_id ?? p.id ?? p.user;
+          console.log(`✅ Assigned to card: \){name} = id \({actualUserId}`);
+          return { id: p.id, name, city, image, user_id: actualUserId };
         });
 
         setRecommendations(top.length ? top : fallbackMatches);
@@ -407,6 +414,52 @@ const Home = () => {
       alert("Something went wrong while starting payment.");
     }
   };
+ 
+  const SocialMediaLinks = () => {
+    const socials = [
+      {
+        name: "Instagram",
+        url: "https://www.instagram.com/sindhuura_com_official?utm_source=qr&igsh=eGZseHlyYnZhZHMy",
+        icon: FaInstagram,
+      },
+      {
+        name: "YouTube",
+        url: "https://youtube.com/@sindhuuracom?si=bcdZ6rpMLLUl5gNw",
+        icon: FaYoutube,
+      },
+      {
+        name: "Facebook",
+        url: "https://www.facebook.com/share/1BBQykHVkB/",
+        icon: FaFacebookF,
+      },
+      {
+        name: "Threads",
+        url: "https://www.threads.com/@sindhuura_com_official",
+        icon: FaTwitter,
+      },
+    ];
+
+    return (
+      <div className="px-4 py-4 text-center mt-4">
+        <p className="text-xs text-gray-500 mb-2 font-medium">
+          Follow us on Social Media
+        </p>
+        <div className="flex justify-center gap-4">
+          {socials.map((s) => (
+            <a
+              key={s.name}
+              href={s.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:text-red-500 text-lg"
+            >
+              <s.icon />
+            </a>
+          ))}
+        </div>
+      </div>
+    );
+  };
   return (
     <div className="min-h-screen bg-white pb-5">
       <div className="max-w-md mx-auto min-h-screen bg-white pb-10">
@@ -592,11 +645,24 @@ const Home = () => {
 
             {/* Bell + menu */}
             <div className="flex items-center gap-3">
-              <button className="relative flex items-center justify-center w-9 h-9 rounded-full bg-white shadow-sm">
+              <button
+                onClick={() => {
+                  // Standard industry UX: if already on notifications, scroll to top
+                  if (location.pathname === "/notifications") {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  } else {
+                    navigate("/notifications");
+                  }
+                }}
+                className="relative flex items-center justify-center w-9 h-9 rounded-full bg-white shadow-sm hover:bg-gray-50 transition-colors"
+              >
                 <FiBell className="w-4 h-4 text-navy" />
-                <span className="absolute -top-1 -right-1 bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-full border border-white">
-                  1
-                </span>
+
+                {/* {unreadCount > 0 && (
+      <span className="absolute -top-1 -right-1 bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-full border border-white">
+        {unreadCount}
+      </span>
+    )} */}
               </button>
               <button
                 onClick={() => setShowMenu((s) => !s)}
@@ -745,6 +811,7 @@ const Home = () => {
                 setSelectedStory(story);
                 setShowStoryModal(true);
               }}
+              onAddStoryClick={() => setShowAddStorySheet(true)}
             />
           ) : (
             <PremiumPlansSection
@@ -775,6 +842,18 @@ const Home = () => {
             setSelectedStory(null);
           }}
         />
+        <AddSuccessStorySheet
+          open={showAddStorySheet}
+          onClose={() => setShowAddStorySheet(false)}
+          onSuccess={() => {
+            // ✅ Auto refresh the stories feed instantly after submit
+            const token = localStorage.getItem("token");
+            getAllSuccessStories(token).then((res) =>
+              setStories(res?.response || []),
+            );
+          }}
+        />
+        <SocialMediaLinks />
 
         <BottomNav />
       </div>
@@ -803,260 +882,272 @@ const RegularHomeSections = ({
   events = [],
   onEventClick,
   onStoryClick,
+  onAddStoryClick,
   membership,
-}) => (
-  <>
-    {/* COMPLETE YOUR PROFILE SECTION */}
-    <section className="mt-4 bg-[#F6FAFF] px-4 py-4">
-      <h2 className="text-sm font-semibold text-navy">Complete Your Profile</h2>
-      <div className="flex items-center gap-2 mt-1 mb-4">
-        <p className="text-[11px] text-gray-500">
-          Profile completeness score 25%
-        </p>
-        <div className="flex-1 h-1 rounded-full bg-gray-200 overflow-hidden">
-          <div className="h-full w-1/4 bg-primary rounded-full" />
-        </div>
-      </div>
+}) => {
+  const navigate = useNavigate();
 
-      <div className="flex justify-between gap-3">
-        <ProfileActionCard
-          title="Add photo(s)"
-          iconBg="bg-[#E6F4FF]"
-          Icon={FiCamera}
-          onClick={onAddPhotosClick}
-        />
-        <ProfileActionCard
-          title=" Add Success Story"
-          iconBg="bg-[#FDEBFF]"
-          Icon={FiStar}
-        />
-        <ProfileActionCard
-          title="Family Details"
-          iconBg="bg-[#FFF4E6]"
-          Icon={FiUsers}
-        />
-      </div>
-    </section>
-
-    {/* DAILY RECOMMENDATIONS */}
-    <section className="bg-white px-4 py-4 mt-2">
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <h2 className="text-sm font-semibold text-navy">
-            Daily Recommendations
-          </h2>
-          <p className="text-[11px] mt-1 text-gray-500">
-            Recommended matches for today
+  return (
+    <>
+      {/* COMPLETE YOUR PROFILE SECTION */}
+      <section className="mt-4 bg-[#F6FAFF] px-4 py-4">
+        <h2 className="text-sm font-semibold text-navy">
+          Complete Your Profile
+        </h2>
+        <div className="flex items-center gap-2 mt-1 mb-4">
+          <p className="text-[11px] text-gray-500">
+            Profile completeness score 25%
           </p>
-        </div>
-      </div>
-
-      {/* Horizontal matches list */}
-      <div className="mt-3 flex gap-3 overflow-x-auto pb-2">
-        {recommendations.map((m) => (
-          <div
-            key={m.id}
-            className="w-28 flex-shrink-0 rounded-2xl bg-gray-100 overflow-hidden shadow-sm"
-          >
-            <div className="h-28 bg-gray-200">
-              {m.image ? (
-                <img
-                  src={m.image}
-                  alt={m.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-200" />
-              )}
-            </div>
-            <div className="px-2 py-1.5">
-              <p className="text-[11px] font-semibold text-navy truncate">
-                {m.name}
-              </p>
-              <p className="text-[10px] text-gray-500 truncate">{m.city}</p>
-            </div>
+          <div className="flex-1 h-1 rounded-full bg-gray-200 overflow-hidden">
+            <div className="h-full w-1/4 bg-primary rounded-full" />
           </div>
-        ))}
-      </div>
-    </section>
-    {/* EVENTS SECTION */}
-    <section className="bg-white px-4 py-2 mt-3">
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <h2 className="text-sm font-semibold text-navy">Upcoming Events</h2>
-          <p className="text-[11px] mt-1 text-gray-500">
-            Discover exclusive Sindhuurra meet‑ups & experiences
-          </p>
         </div>
-      </div>
 
-      {/* Free-trial / non-premium: show upgrade text only */}
-      {!membership?.isPremium && (
-        <div className="mt-5 rounded-2xl bg-[#f8efe3] border border-[#FFD9A5] px-4 py-4 text-center">
-          {/* Icon */}
-          <div className="flex justify-center mb-2">
-            <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center">
-              <FiCalendar className="w-5 h-5 text-[#B36A1E]" />
-            </div>
+        <div className="flex justify-between gap-3">
+          <ProfileActionCard
+            title="Add photo(s)"
+            iconBg="bg-[#E6F4FF]"
+            Icon={FiCamera}
+            onClick={onAddPhotosClick}
+          />
+          <ProfileActionCard
+            title=" Add Success Story"
+            iconBg="bg-[#faf9cf]"
+            Icon={FiStar}
+            onClick={onAddStoryClick}
+          />
+          <ProfileActionCard
+            title="Good luck on your journey"
+            iconBg="bg-[#FFF0F5]"
+            Icon={FiHeart}
+          />
+        </div>
+      </section>
+
+      {/* DAILY RECOMMENDATIONS */}
+      <section className="bg-white px-4 py-4 mt-2">
+        <div className="flex items-start justify-between mb-2">
+          <div>
+            <h2 className="text-sm font-semibold text-navy">
+              Daily Recommendations
+            </h2>
+            <p className="text-[11px] mt-1 text-gray-500">
+              Recommended matches for today
+            </p>
           </div>
-
-          {/* Title */}
-          <p className="text-sm font-semibold text-navy mb-1">
-            Events are a Premium feature
-          </p>
-
-          {/* Description */}
-          <p className="text-[11px] text-gray-700 leading-relaxed">
-            Upgrade to a Premium plan to view and register for upcoming
-            Sindhuura community events, meet-ups and experiences.
-          </p>
         </div>
-      )}
-      {/* Premium: show real events list */}
-      {membership?.isPremium && (
-        <>
-          {eventsLoading && (
-            <p className="text-center text-[12px] text-gray-500">
-              Loading events…
-            </p>
-          )}
-          {eventsError && (
-            <p className="text-center text-[12px] text-red-500">
-              {eventsError}
-            </p>
-          )}
-          {!eventsLoading && events.length === 0 && !eventsError && (
-            <div className="flex flex-col items-center justify-center text-center py-6">
-              <FiCalendar className="w-6 h-6 text-[#B36A1E] mb-2" />
-              <p className="text-[12px] text-gray-500">
-                No upcoming events listed right now.
-              </p>
-            </div>
-          )}
 
-          {/* EVENTS CAROUSEL SECTION */}
-          {events.length > 0 && (
-            <section className="px-0 mt-3">
-              <div className="relative w-full h-48 rounded-2xl overflow-hidden shadow-sm">
-                {events.map((ev, i) => (
-                  <div
-                    key={ev.id || i}
-                    onClick={() => onEventClick?.(ev)}
-                    className={`absolute inset-0 cursor-pointer transition-opacity duration-700 ${
-                      i === eventIndex ? "opacity-100" : "opacity-0"
-                    }`}
-                  >
-                    {/* Image */}
-                    <img
-                      src={ev.image}
-                      alt={ev.event_name}
-                      className="w-full h-full object-cover"
-                    />
-
-                    {/* Overlay */}
-                    <div className="absolute inset-0 bg-black/40 flex flex-col justify-end p-3 text-white">
-                      <p className="text-sm font-semibold">{ev.event_name}</p>
-                      <p className="text-[11px] text-gray-200">
-                        {ev.event_datetime_display}
-                      </p>
-                      <p className="text-[11px] text-gray-200">
-                        {ev.venue} • {ev.city}
-                      </p>
-                      <p className="text-[10px] line-clamp-1 opacity-90">
-                        {ev.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-
-                {/* dots */}
-                <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
-                  {events.map((_, i) => (
-                    <span
-                      key={i}
-                      className={`w-2 h-2 rounded-full ${
-                        i === eventIndex ? "bg-primary" : "bg-white/70"
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
-        </>
-      )}
-    </section>
-    {/* SUCCESS STORIES */}
-    <section className="bg-white px-4 py-4 mt-3">
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <h2 className="text-sm font-semibold text-navy">
-            Happy Success Stories
-          </h2>
-          <p className="text-[11px] mt-1 text-gray-500">
-            Couples who found love through Sindhuurra
-          </p>
-        </div>
-      </div>
-
-      {storiesLoading && (
-        <p className="text-center text-[12px] text-gray-500">
-          Loading stories…
-        </p>
-      )}
-
-      {storiesError && (
-        <p className="text-center text-[12px] text-red-500">{storiesError}</p>
-      )}
-
-      {!storiesLoading && stories.length === 0 && !storiesError && (
-        <p className="text-center text-[12px] text-gray-500">
-          No success stories yet — yours could be next!
-        </p>
-      )}
-
-      {/* Horizontal scroll of stories */}
-      {stories.length > 0 && (
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide mt-2 scroll-smooth">
-          {stories.map((s) => (
+        {/* Horizontal matches list */}
+        <div className="mt-3 flex gap-3 overflow-x-auto pb-2">
+          {recommendations.map((m) => (
             <div
-              key={s.id}
-              onClick={() => onStoryClick?.(s)}
-              className="w-[220px] flex-shrink-0 rounded-2xl bg-gradient-to-b
-               from-[#FFF7E9] to-[#FFFFFF]
-               border border-gray-100 shadow-sm overflow-hidden
-               hover:shadow-md transition cursor-pointer"
+              key={m.id}
+              onClick={() => {
+  console.log("🟢 Card clicked, navigating to user:", m.user_id);
+  navigate(`/matches/${m.user_id}`);
+}}
+              className="w-28 flex-shrink-0 rounded-2xl bg-gray-100 overflow-hidden shadow-sm cursor-pointer hover:shadow-md active:scale-[0.98] transition-all"
             >
-              {/* first image */}
-              {s.images && s.images.length > 0 ? (
-                <img
-                  src={s.images[0].image}
-                  alt={s.couple_name}
-                  className="h-32 w-full object-cover"
-                />
-              ) : (
-                <div className="h-32 w-full bg-gray-200 flex items-center justify-center text-gray-400 text-[11px]">
-                  No Image
-                </div>
-              )}
-
-              {/* text */}
-              <div className="px-3 py-2">
-                <p className="text-[12px] font-semibold text-navy truncate">
-                  {s.couple_name}
+              <div className="h-28 bg-gray-200">
+                {m.image ? (
+                  <img
+                    src={m.image}
+                    alt={m.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-200" />
+                )}
+              </div>
+              <div className="px-2 py-1.5">
+                <p className="text-[11px] font-semibold text-navy truncate">
+                  {m.name}
                 </p>
-                <p className="text-[10px] text-gray-500 mb-1">{s.venue}</p>
-                <p className="text-[10px] text-gray-700 line-clamp-2">
-                  {s.description}
-                </p>
+                <p className="text-[10px] text-gray-500 truncate">{m.city}</p>
               </div>
             </div>
           ))}
         </div>
-      )}
-    </section>
-  </>
-);
+      </section>
+      {/* EVENTS SECTION */}
+      <section className="bg-white px-4 py-2 mt-3">
+        <div className="flex items-start justify-between mb-2">
+          <div>
+            <h2 className="text-sm font-semibold text-navy">Upcoming Events</h2>
+            <p className="text-[11px] mt-1 text-gray-500">
+              Discover exclusive Sindhuurra meet‑ups & experiences
+            </p>
+          </div>
+        </div>
+
+        {/* Free-trial / non-premium: show upgrade text only */}
+        {!membership?.isPremium && (
+          <div className="mt-5 rounded-2xl bg-[#f8efe3] border border-[#FFD9A5] px-4 py-4 text-center">
+            {/* Icon */}
+            <div className="flex justify-center mb-2">
+              <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center">
+                <FiCalendar className="w-5 h-5 text-[#B36A1E]" />
+              </div>
+            </div>
+
+            {/* Title */}
+            <p className="text-sm font-semibold text-navy mb-1">
+              Events are a Premium feature
+            </p>
+
+            {/* Description */}
+            <p className="text-[11px] text-gray-700 leading-relaxed">
+              Upgrade to a Premium plan to view and register for upcoming
+              Sindhuura community events, meet-ups and experiences.
+            </p>
+          </div>
+        )}
+        {/* Premium: show real events list */}
+        {membership?.isPremium && (
+          <>
+            {eventsLoading && (
+              <p className="text-center text-[12px] text-gray-500">
+                Loading events…
+              </p>
+            )}
+            {eventsError && (
+              <p className="text-center text-[12px] text-red-500">
+                {eventsError}
+              </p>
+            )}
+            {!eventsLoading && events.length === 0 && !eventsError && (
+              <div className="flex flex-col items-center justify-center text-center py-6">
+                <FiCalendar className="w-6 h-6 text-[#B36A1E] mb-2" />
+                <p className="text-[12px] text-gray-500">
+                  No upcoming events listed right now.
+                </p>
+              </div>
+            )}
+
+            {/* EVENTS CAROUSEL SECTION */}
+            {events.length > 0 && (
+              <section className="px-0 mt-3">
+                <div className="relative w-full h-48 rounded-2xl overflow-hidden shadow-sm">
+                  {events.map((ev, i) => (
+                    <div
+                      key={ev.id || i}
+                      onClick={() => onEventClick?.(ev)}
+                      className={`absolute inset-0 cursor-pointer transition-opacity duration-700 \){
+                        i === eventIndex ? "opacity-100" : "opacity-0"
+                      }`}
+                    >
+                      {/* Image */}
+                      <img
+                        src={ev.image}
+                        alt={ev.event_name}
+                        className="w-full h-full object-cover"
+                      />
+
+                      {/* Overlay */}
+                      <div className="absolute inset-0 bg-black/40 flex flex-col justify-end p-3 text-white">
+                        <p className="text-sm font-semibold">{ev.event_name}</p>
+                        <p className="text-[11px] text-gray-200">
+                          {ev.event_datetime_display}
+                        </p>
+                        <p className="text-[11px] text-gray-200">
+                          {ev.venue} • {ev.city}
+                        </p>
+                        <p className="text-[10px] line-clamp-1 opacity-90">
+                          {ev.description}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* dots */}
+                  <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
+                    {events.map((_, i) => (
+                      <span
+                        key={i}
+                        className={`w-2 h-2 rounded-full ${
+                          i === eventIndex ? "bg-primary" : "bg-white/70"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+          </>
+        )}
+      </section>
+      {/* SUCCESS STORIES */}
+      <section className="bg-white px-4 py-4 mt-3">
+        <div className="flex items-start justify-between mb-2">
+          <div>
+            <h2 className="text-sm font-semibold text-navy">
+              Happy Success Stories
+            </h2>
+            <p className="text-[11px] mt-1 text-gray-500">
+              Couples who found love through Sindhuurra
+            </p>
+          </div>
+        </div>
+
+        {storiesLoading && (
+          <p className="text-center text-[12px] text-gray-500">
+            Loading stories…
+          </p>
+        )}
+
+        {storiesError && (
+          <p className="text-center text-[12px] text-red-500">{storiesError}</p>
+        )}
+
+        {!storiesLoading && stories.length === 0 && !storiesError && (
+          <p className="text-center text-[12px] text-gray-500">
+            No success stories yet — yours could be next!
+          </p>
+        )}
+
+        {/* Horizontal scroll of stories */}
+        {stories.length > 0 && (
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide mt-2 scroll-smooth">
+            {stories.map((s) => (
+              <div
+                key={s.id}
+                onClick={() => onStoryClick?.(s)}
+                className="w-[220px] flex-shrink-0 rounded-2xl bg-gradient-to-b
+                 from-[#FFF7E9] to-[#FFFFFF]
+                 border border-gray-100 shadow-sm overflow-hidden
+                 hover:shadow-md transition cursor-pointer"
+              >
+                {/* first image */}
+                {s.images && s.images.length > 0 ? (
+                  <img
+                    src={s.images[0].image}
+                    alt={s.couple_name}
+                    className="h-32 w-full object-cover"
+                  />
+                ) : (
+                  <div className="h-32 w-full bg-gray-200 flex items-center justify-center text-gray-400 text-[11px]">
+                    No Image
+                  </div>
+                )}
+
+                {/* text */}
+                <div className="px-3 py-2">
+                  <p className="text-[12px] font-semibold text-navy truncate">
+                    {s.couple_name}
+                  </p>
+                  <p className="text-[10px] text-gray-500 mb-1">{s.venue}</p>
+                  <p className="text-[10px] text-gray-700 line-clamp-2">
+                    {s.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+    </>
+  );
+};
 
 // Static free plan; paid plans come from API
 const FREE_PLAN = {
@@ -1069,7 +1160,6 @@ const FREE_PLAN = {
   tag: null,
   features: [
     "Create profile",
-    "View 5 profiles per day",
     "Send 2 interests per day",
     "Basic search filters",
   ],
@@ -1361,7 +1451,7 @@ const FAQS = [
   },
   {
     q: "Is there a refund policy?",
-    a: "We offer a 7-day money-back guarantee for premium plans if you're not satisfied with our service.",
+    a: "We offer a 30-day money-back guarantee for premium plans if you're not satisfied with our service.",
   },
 ];
 
@@ -1716,4 +1806,237 @@ const SuccessStoryModal = ({ open, story, onClose }) => {
   );
 };
 
+const AddSuccessStorySheet = ({ open, onClose, onSuccess }) => {
+  const [form, setForm] = useState({
+    groom_name: "",
+    bride_name: "",
+    wedding_date: "",
+    venue: "",
+    description: "",
+  });
+  const [images, setImages] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const [previewImages, setPreviewImages] = useState([]);
+
+  // Reset form when sheet closes
+  useEffect(() => {
+    if (!open) {
+      setForm({
+        groom_name: "",
+        bride_name: "",
+        wedding_date: "",
+        venue: "",
+        description: "",
+      });
+      setImages([]);
+      setPreviewImages([]);
+      setError("");
+    }
+  }, [open]);
+
+  const handleInputChange = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 3) {
+      setError("You can upload a maximum of 3 images");
+      return;
+    }
+
+    setImages(files);
+    setPreviewImages(files.map((file) => URL.createObjectURL(file)));
+    setError("");
+  };
+
+  const removeImage = (index) => {
+    const newImages = [...images];
+    const newPreviews = [...previewImages];
+    newImages.splice(index, 1);
+    newPreviews.splice(index, 1);
+    setImages(newImages);
+    setPreviewImages(newPreviews);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      setUploading(true);
+      setError("");
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Please login first");
+        return;
+      }
+
+      // Validation
+      if (!form.groom_name || !form.bride_name || !form.wedding_date) {
+        setError("Please fill all required fields");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("groom_name", form.groom_name);
+      formData.append("bride_name", form.bride_name);
+      formData.append("wedding_date", form.wedding_date);
+      formData.append("venue", form.venue);
+      formData.append("description", form.description);
+      images.forEach((file) => formData.append("images", file));
+
+      await addSuccessStory(formData, token);
+
+      // Success flow
+      if (onSuccess) {
+        onSuccess();
+      }
+      onClose();
+    } catch (err) {
+      console.error("Add story failed:", err);
+      setError("Failed to submit story. Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center">
+      <div className="w-full max-w-md bg-white rounded-t-2xl p-4 shadow-lg max-h-[90vh] overflow-y-auto">
+        {/* Handle bar */}
+        <div className="w-10 h-1 rounded-full bg-gray-300 mx-auto mb-4" />
+
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-navy">
+            Share Your Success Story
+          </h2>
+          <button onClick={onClose} className="text-xs text-gray-500">
+            Close
+          </button>
+        </div>
+
+        {error && (
+          <p className="text-[11px] text-red-500 mb-3 text-center">{error}</p>
+        )}
+
+        <div className="space-y-3">
+          <div>
+            <label className="block text-[11px] font-medium text-gray-700 mb-1">
+              Groom's Name *
+            </label>
+            <input
+              type="text"
+              value={form.groom_name}
+              onChange={(e) => handleInputChange("groom_name", e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-xs"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-gray-700 mb-1">
+              Bride's Name *
+            </label>
+            <input
+              type="text"
+              value={form.bride_name}
+              onChange={(e) => handleInputChange("bride_name", e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-xs"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-gray-700 mb-1">
+              Wedding Date *
+            </label>
+            <input
+              type="date"
+              value={form.wedding_date}
+              onChange={(e) =>
+                handleInputChange("wedding_date", e.target.value)
+              }
+              className="w-full border rounded-lg px-3 py-2 text-xs"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-gray-700 mb-1">
+              Venue
+            </label>
+            <input
+              type="text"
+              value={form.venue}
+              onChange={(e) => handleInputChange("venue", e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-gray-700 mb-1">
+              Your Story
+            </label>
+            <textarea
+              value={form.description}
+              onChange={(e) => handleInputChange("description", e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-xs min-h-[80px]"
+              placeholder="Tell us how you both met on Sindhuuraa..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-gray-700 mb-1">
+              Upload Photos (max 3)
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFileChange}
+              className="text-xs"
+            />
+            {images.length > 0 && (
+              <p className="text-xs text-gray-500 mt-1">
+                {images.length} file(s) selected
+              </p>
+            )}
+
+            {previewImages.length > 0 && (
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                {previewImages.map((preview, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={preview}
+                      alt={`preview-${index}`}
+                      className="w-full h-20 object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-xs"
+                    >
+                      <FiX className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={uploading}
+            className="w-full bg-primary text-white py-2.5 rounded-full text-xs font-semibold shadow disabled:opacity-60 mt-2"
+          >
+            {uploading ? "Submitting..." : "Share My Story"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 export default Home;
