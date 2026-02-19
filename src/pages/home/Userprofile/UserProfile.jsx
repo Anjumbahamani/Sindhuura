@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -151,8 +149,8 @@ const UserProfile = () => {
             description: resp.description || "",
             education: resp.education || "",
             religion_name: resp.religion?.name || "", // Fix: extract from object
-  caste_name: resp.caste?.name || "",       // Fix: extract from object
-  sub_caste: resp.sub_caste || "",
+            caste_name: resp.caste?.name || "", // Fix: extract from object
+            sub_caste: resp.sub_caste || "",
             course_degree: resp.course_degree || "",
             college: resp.college || "",
             passing_year: resp.passing_year || "",
@@ -189,9 +187,9 @@ const UserProfile = () => {
               place_of_birth: ls.place_of_birth || "",
               nakshatra: ls.nakshatra || "",
               rashi: ls.rashi || "",
-                college: ls.college || "", 
-  course_degree: ls.course_degree || "",
-  passing_year: ls.passing_year ? String(ls.passing_year) : "", 
+              college: ls.college || "",
+              course_degree: ls.course_degree || "",
+              passing_year: ls.passing_year ? String(ls.passing_year) : "",
             },
           });
         }
@@ -275,9 +273,9 @@ const UserProfile = () => {
         religion_name: form.religion_name || null,
         sub_caste: form.sub_caste || null,
         education: form.education || null,
-          college: form.college || null,
-  course_degree: form.course_degree || null,
-  passing_year: form.passing_year || null,
+        college: form.college || null,
+        course_degree: form.course_degree || null,
+        passing_year: form.passing_year || null,
         occupation: form.occupation || null,
         annual_income: form.annual_income || null,
 
@@ -678,24 +676,29 @@ const UserProfile = () => {
                     onChange={(v) => editing && handleChange("country", v)}
                     disabled={!editing}
                   />
-  {/* Inside BASIC DETAILS SECTION */}
-<LabeledInput
-  label="Religion"
-  value={editing ? form.religion_name : profile.religion?.name || ""}
-  disabled={true} 
-/>
-<LabeledInput
-  label="Caste"
-  value={editing ? form.caste_name : profile.caste?.name || ""}
-  disabled={true}
-/>
-<LabeledInput
-  label="Sub Caste"
-  value={editing ? form.sub_caste : profile.sub_caste || ""}
-  onChange={(v) => editing && handleChange("sub_caste", v)}
-  disabled={!editing}
-/>
-
+                  {/* Inside BASIC DETAILS SECTION */}
+                  <LabeledInput
+                    label="Religion"
+                    value={
+                      editing
+                        ? form.religion_name
+                        : profile.religion?.name || ""
+                    }
+                    disabled={true}
+                  />
+                  <LabeledInput
+                    label="Caste"
+                    value={
+                      editing ? form.caste_name : profile.caste?.name || ""
+                    }
+                    disabled={true}
+                  />
+                  <LabeledInput
+                    label="Sub Caste"
+                    value={editing ? form.sub_caste : profile.sub_caste || ""}
+                    onChange={(v) => editing && handleChange("sub_caste", v)}
+                    disabled={!editing}
+                  />
                 </div>
               </section>
 
@@ -715,7 +718,9 @@ const UserProfile = () => {
                   <LabeledInput
                     label="Degree"
                     value={
-                      editing ? form.course_degree : lifestyle?.course_degree || ""
+                      editing
+                        ? form.course_degree
+                        : lifestyle?.course_degree || ""
                     }
                     onChange={(v) =>
                       editing && handleChange("course_degree", v)
@@ -723,17 +728,21 @@ const UserProfile = () => {
                     disabled={!editing}
                   />
                   <LabeledInput
-  label="College"
-  value={editing ? form.college : lifestyle?.college || ""}
-  onChange={(v) => editing && handleChange("college", v)}
-  disabled={!editing}
-/>
-<LabeledInput
-  label="Passing Year"
-  value={editing ? form.passing_year : String(lifestyle?.passing_year || "")}
-  onChange={(v) => editing && handleChange("passing_year", v)}
-  disabled={!editing}
-/>
+                    label="College"
+                    value={editing ? form.college : lifestyle?.college || ""}
+                    onChange={(v) => editing && handleChange("college", v)}
+                    disabled={!editing}
+                  />
+                  <LabeledInput
+                    label="Passing Year"
+                    value={
+                      editing
+                        ? form.passing_year
+                        : String(lifestyle?.passing_year || "")
+                    }
+                    onChange={(v) => editing && handleChange("passing_year", v)}
+                    disabled={!editing}
+                  />
                   <LabeledInput
                     label="Occupation"
                     value={editing ? form.occupation : profile.occupation || ""}
@@ -1258,14 +1267,14 @@ const UserProfile = () => {
             )}
           </section>
         </main>
-<div className="pt-10 pb-10 px-4">
-  <button 
-    onClick={() => navigate("/deleteacc")}
-    className="w-full flex items-center justify-center gap-2 text-red-500 text-xs font-semibold py-4 border border-red-100 rounded-2xl bg-red-100"
-  >
-    <FiTrash2 /> Delete My Account
-  </button>
-</div>
+        <div className="pt-10 pb-10 px-4">
+          <button
+            onClick={() => navigate("/deleteacc")}
+            className="w-full flex items-center justify-center gap-2 text-red-500 text-xs font-semibold py-4 border border-red-100 rounded-2xl bg-red-100"
+          >
+            <FiTrash2 /> Delete My Account
+          </button>
+        </div>
         <BottomNav />
       </div>
     </div>
@@ -1309,9 +1318,9 @@ const MembershipCard = ({ membership, onUpgradeClick }) => {
       })
     : null;
 
+  // For free users, use profile_reveal_count from the API
   const used = contactViewed || 0;
-  const totalForPremium =
-    planLimit || (contactViewed || 0) + (contactRemaining || 0);
+  const totalForPremium = planLimit || 0;
   const total = isPremium ? totalForPremium : FREE_CONTACT_LIMIT;
   const remaining = isPremium
     ? contactRemaining

@@ -39,6 +39,7 @@ import { FiLogOut } from "react-icons/fi";
 import { getMembershipFromProfile } from "../../utils/membership";
 import { useFcmToken } from "../../hooks/useFcmToken";
 import { FaFacebookF, FaYoutube, FaInstagram, FaTwitter } from "react-icons/fa";
+import { FaThreads } from "react-icons/fa6";
 
 const matches = [
   { id: 1, name: "Rahul, 28", city: "Bengaluru" },
@@ -435,7 +436,7 @@ const Home = () => {
       {
         name: "Threads",
         url: "https://www.threads.com/@sindhuura_com_official",
-        icon: FaTwitter,
+        icon: FaThreads,
       },
     ];
 
@@ -682,15 +683,15 @@ const Home = () => {
                     >
                       Terms & Conditions
                     </li>
-                    <li
+                    {/* <li
                       onClick={() => {
                         setShowMenu(false);
-                        navigate("/about-team"); // ➡️ route path
+                        navigate("/about-team"); 
                       }}
                       className="px-4 py-2 hover:bg-[#FFF5EB] cursor-pointer"
                     >
                       About Our Team
-                    </li>
+                    </li> */}
                   </ul>
                 </div>
               )}

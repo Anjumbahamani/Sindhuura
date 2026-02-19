@@ -1,4 +1,843 @@
+// import React, { useEffect, useState } from "react";
+// import { useParams, useNavigate } from "react-router-dom";
+// import {
+//   FiArrowLeft,
+//   FiMapPin,
+//   FiCheckCircle,
+//   FiFlag,
+//   FiX,
+//   FiPhone,
+//   FiMail,
+// } from "react-icons/fi";
+// import BottomNav from "../../../components/BottomNav";
+// import { getInterestDetails } from "../../../services/match.service";
+// import { getUserProfile } from "../../../services/auth.service";
+// import { getMembershipFromProfile } from "../../../utils/membership";
 
+// const formatHeight = (h) => {
+//   if (!h) return "";
+//   const [feetStr, inchStr] = String(h).split(".");
+//   const feet = feetStr;
+//   const inches = inchStr || "0";
+//   return `${feet}' ${inches}"`;
+// };
+
+// const listToText = (arr) => {
+//   if (!Array.isArray(arr) || !arr.length) return "";
+//   return arr.map((item) => item?.name ?? item).join(", ");
+// };
+
+// const mapOccupationLabel = (code) => {
+//   if (!code) return "";
+//   const map = {
+//     software: "Software Professional",
+//     business: "Business",
+//     doctor: "Doctor",
+//     teacher: "Teacher",
+//   };
+//   return map[code] || code;
+// };
+// const FREE_CONTACT_LIMIT = 5;
+// const InterestDetails = () => {
+//   const params = useParams();
+//   console.log("InterestDetails useParams:", params);
+
+//   // Works with either /interests/:userId or /interests/:id
+//   const interestId = params.userId || params.id;
+
+//   const navigate = useNavigate();
+
+//   const [data, setData] = useState(null); // full user object
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState("");
+
+//   const [membership, setMembership] = useState({
+//     type: "free_trial",
+//     isPremium: false,
+//     planName: null,
+//     planLimit: 0,
+//     current_count: 0,
+//     limit: 0,
+//     expiryDate: null,
+//   });
+
+//   // Contact reveal state
+//   const [contactInfo, setContactInfo] = useState(null);
+//   const [revealLoading, setRevealLoading] = useState(false);
+//   const [revealError, setRevealError] = useState("");
+
+//   // ====== REPORT MODAL STATE ======
+//   const [showReportModal, setShowReportModal] = useState(false);
+//   const [reportReasons, setReportReasons] = useState([]);
+//   const [reportReasonsLoading, setReportReasonsLoading] = useState(false);
+//   const [selectedReasonId, setSelectedReasonId] = useState("");
+//   const [reportDescription, setReportDescription] = useState("");
+//   const [reportSubmitLoading, setReportSubmitLoading] = useState(false);
+//   const [reportError, setReportError] = useState("");
+//   const [reportSuccess, setReportSuccess] = useState("");
+
+//   useEffect(() => {
+//     if (!interestId) {
+//       setError("Invalid profile");
+//       setLoading(false);
+//       return;
+//     }
+
+//     const fetchDetails = async () => {
+//       try {
+//         const token = localStorage.getItem("token");
+//         if (!token) {
+//           setError("Please login to view profile.");
+//           setLoading(false);
+//           return;
+//         }
+
+//         const res = await getInterestDetails(interestId, token);
+//         console.log("getInterestDetails response:", res);
+
+//         if (!res || !res.response) {
+//           setError("Profile not found.");
+//           return;
+//         }
+
+//         setData(res.response);
+//       } catch (err) {
+//         console.error("getInterestDetails error:", err);
+//         setError("Failed to load profile details");
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchDetails();
+//   }, [interestId]);
+  
+
+//   // ====== FETCH REPORT REASONS WHEN MODAL OPENS ======
+//   useEffect(() => {
+//     if (!showReportModal) return;
+
+//     const fetchReasons = async () => {
+//       try {
+//         setReportReasonsLoading(true);
+//         setReportError("");
+//         const token = localStorage.getItem("token");
+
+//         const res = await fetch(
+//           "https://admin.sindhuura.com/api/match/report-reasons/",
+//           {
+//             headers: {
+//               "Content-Type": "application/json",
+//               ...(token ? { Authorization: `Bearer ${token}` } : {}),
+//             },
+//           },
+//         );
+
+//         if (!res.ok) {
+//           throw new Error("Failed to load report reasons");
+//         }
+
+//         const result = await res.json();
+//         if (!result.status) {
+//           throw new Error(result.message || "Failed to load report reasons");
+//         }
+
+//         setReportReasons(result.response || []);
+//       } catch (err) {
+//         console.error("Error fetching report reasons:", err);
+//         setReportError(
+//           err.message || "Could not load reasons. Please try again.",
+//         );
+//       } finally {
+//         setReportReasonsLoading(false);
+//       }
+//     };
+
+//     fetchReasons();
+//   }, [showReportModal]);
+
+//   // ----- Computed stats for attempts display -----
+//   const isPremium = membership.isPremium;
+//   const used = membership.current_count || 0;
+//   const remaining = membership.limit || 0;
+//   const total = membership.planLimit || used + remaining;
+
+//   // For free users, calculate based on FREE_CONTACT_LIMIT
+//   const freeUsed = isPremium ? 0 : membership.current_count || 0;
+//   const freeRemaining = isPremium
+//     ? 0
+//     : Math.max(0, FREE_CONTACT_LIMIT - freeUsed);
+//   const freeTotal = FREE_CONTACT_LIMIT;
+
+//   const handleRevealContact = async () => {
+//     try {
+//       setRevealError("");
+
+//       const token = localStorage.getItem("token");
+//       if (!token) {
+//         setRevealError("Please login to reveal contact details.");
+//         return;
+//       }
+
+//       setRevealLoading(true);
+
+//       const rawBase = import.meta.env.VITE_API_BASE_URL || "";
+//       const baseUrl = rawBase.replace(/\/+$/, ""); // remove trailing slashes
+//       const res = await fetch(
+//         `${baseUrl}/api/match/reveal-contact/${userId}/`,
+//         {
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//           },
+//         },
+//       );
+
+//       if (!res.ok) {
+//         throw new Error(`HTTP ${res.status}`);
+//       }
+
+//       const json = await res.json();
+
+//       // If status is false, show error
+//       if (!json.status) {
+//         throw new Error(json.message || "Failed to reveal contact details.");
+//       }
+
+//       const resp = json.response || {};
+
+//       // Case 1: Contact details returned successfully
+//       setContactInfo({
+//         phone_number: resp.phone_number || null,
+//         email: resp.email || null,
+//         user_images: resp.user_images || [],
+//         horoscope: resp.horoscope || null,
+//       });
+
+//       // Update membership counters using API response
+//       // The API returns current_count and limit
+//       setMembership((prev) => ({
+//         ...prev,
+//         type: "premium", // If this API works, user must be premium
+//         isPremium: true,
+//         current_count: resp.current_count || prev.current_count,
+//         limit: resp.limit || prev.limit,
+//         // Calculate planLimit as current_count + limit (total available)
+//         planLimit: (resp.current_count || 0) + (resp.limit || 0),
+//       }));
+
+//       // Check if limit reached
+//       if (resp.limit <= 0) {
+//         setRevealError(
+//           "You have reached your contact reveal limit for this plan.",
+//         );
+//       }
+//     } catch (err) {
+//       console.error("Reveal contact failed:", err);
+//       setRevealError(
+//         err.message || "Could not reveal contact. Please try again.",
+//       );
+//     } finally {
+//       setRevealLoading(false);
+//     }
+//   };
+//   if (loading) {
+//     return <p className="p-4 text-sm text-gray-500">Loading details…</p>;
+//   }
+
+//   if (error) {
+//     return <p className="p-4 text-sm text-red-500">{error}</p>;
+//   }
+
+//   const user = data || {};
+//   const profile = user.profile || {};
+//   const lifestyle = profile.lifestyle || {};
+
+//   const imageUrl = user.profile_image || profile.profile_image || null;
+//   const heightText = profile.height ? formatHeight(profile.height) : "";
+
+//   // ====== SUBMIT REPORT HANDLER ======
+//   const handleSubmitReport = async (e) => {
+//     e.preventDefault();
+//     setReportError("");
+//     setReportSuccess("");
+
+//     if (!selectedReasonId) {
+//       setReportError("Please select a reason.");
+//       return;
+//     }
+
+//     const reportedUserId = user.id || Number(interestId);
+//     if (!reportedUserId) {
+//       setReportError("Unable to identify user to report.");
+//       return;
+//     }
+
+//     try {
+//       setReportSubmitLoading(true);
+//       const token = localStorage.getItem("token");
+
+//       if (!token) {
+//         setReportError("Please login to report users.");
+//         return;
+//       }
+
+//       const res = await fetch(
+//         "https://admin.sindhuura.com/api/match/report-user/",
+//         {
+//           method: "POST",
+//           headers: {
+//             "Content-Type": "application/json",
+//             ...(token ? { Authorization: `Bearer ${token}` } : {}),
+//           },
+//           body: JSON.stringify({
+//             reported_user_id: reportedUserId,
+//             reason_id: Number(selectedReasonId),
+//             description: reportDescription || undefined,
+//           }),
+//         },
+//       );
+
+//       const result = await res.json();
+
+//       if (!res.ok || result.status === false) {
+//         throw new Error(result.message || "Failed to submit report");
+//       }
+
+//       setReportSuccess("User reported successfully.");
+//       // Reset & close modal
+//       setSelectedReasonId("");
+//       setReportDescription("");
+//       setShowReportModal(false);
+//       alert("User reported successfully.");
+//     } catch (err) {
+//       console.error("Error submitting report:", err);
+//       setReportError(
+//         err.message || "Something went wrong while reporting this user.",
+//       );
+//     } finally {
+//       setReportSubmitLoading(false);
+//     }
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-white pb-20">
+//       <div className="max-w-md mx-auto min-h-screen bg-white pb-20">
+//         {/* HEADER */}
+//         <header className="flex items-center justify-between px-4 py-3 shadow-sm bg-white">
+//           <div className="flex items-center gap-3">
+//             <button
+//               type="button"
+//               onClick={() => navigate(-1)}
+//               className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"
+//             >
+//               <FiArrowLeft className="w-4 h-4 text-navy" />
+//             </button>
+//             <h1 className="text-base font-semibold text-navy">
+//               Profile Details
+//             </h1>
+//           </div>
+
+//           {/* REPORT ICON BUTTON */}
+//           <button
+//             type="button"
+//             onClick={() => setShowReportModal(true)}
+//             className="flex items-center gap-1 text-xs text-red-500 hover:text-red-600"
+//           >
+//             <FiFlag className="w-4 h-4" />
+//             <span>Report</span>
+//           </button>
+//         </header>
+
+//         {/* CONTENT */}
+//         <main className="px-4 py-4">
+//           <div className="rounded-3xl overflow-hidden shadow-md bg-gradient-to-b from-[#FFF7E9] via-white to-white">
+//             {/* IMAGE */}
+//             <div className="bg-gray-200">
+//               {imageUrl ? (
+//                 <img
+//                   src={imageUrl}
+//                   alt={user.name}
+//                   className="w-full h-56 object-cover"
+//                 />
+//               ) : (
+//                 <div className="w-full h-56 flex items-center justify-center text-navy text-lg font-semibold bg-gradient-to-br from-gray-300 to-gray-200">
+//                   {user.name ? user.name[0].toUpperCase() : "M"}
+//                 </div>
+//               )}
+//             </div>
+
+//             {/* BASIC INFO */}
+//             <section className="px-4 pt-3 pb-3 space-y-2 bg-white/70">
+//               {/* Verified */}
+//               <div className="flex items-center gap-1 text-[11px] mb-1">
+//                 {user.is_active ? (
+//                   <>
+//                     <FiCheckCircle className="w-3 h-3 text-[#1D7DEA]" />
+//                     <span className="text-[#1D7DEA]">Verified</span>
+//                   </>
+//                 ) : (
+//                   <>
+//                     <FiCheckCircle className="w-3 h-3 text-gray-400" />
+//                     <span className="text-gray-400">Not verified yet</span>
+//                   </>
+//                 )}
+//               </div>
+
+//               {/* Name */}
+//               <h2 className="text-lg font-semibold text-navy">
+//                 {user.name || "Member"}
+//               </h2>
+
+//               {/* Chips: gender+DOB, height, marital status */}
+//               <div className="flex flex-wrap gap-1 mt-1 text-[10px]">
+//                 {profile.gender && profile.date_of_birth && (
+//                   <span className="px-2 py-0.5 rounded-full bg-[#FFF4E6] text-[#B36A1E]">
+//                     {profile.gender}, DOB {profile.date_of_birth}
+//                   </span>
+//                 )}
+//                 {profile.height && (
+//                   <span className="px-2 py-0.5 rounded-full bg-[#E6F4FF] text-[#1D7DEA]">
+//                     Height {heightText}
+//                   </span>
+//                 )}
+//                 {profile.marital_status && (
+//                   <span className="px-2 py-0.5 rounded-full bg-[#FDEBF3] text-[#B14F7E]">
+//                     {profile.marital_status}
+//                   </span>
+//                 )}
+//               </div>
+
+//               {/* Religion & caste */}
+//               {(profile.religion || profile.caste) && (
+//                 <p className="text-[11px] text-gray-600 mt-1">
+//                   {profile.religion}
+//                   {profile.caste && ` • ${profile.caste}`}
+//                 </p>
+//               )}
+
+//               {/* Location */}
+//               {(profile.city || profile.state || profile.country) && (
+//                 <p className="text-[11px] text-gray-600 mt-1 flex items-center gap-1">
+//                   <FiMapPin className="w-3 h-3 text-gray-400" />
+//                   <span>
+//                     {[profile.city, profile.state, profile.country]
+//                       .filter(Boolean)
+//                       .join(", ")}
+//                   </span>
+//                 </p>
+//               )}
+
+//               {/* Joined on */}
+//               {user.date_joined && (
+//                 <p className="text-[11px] text-gray-500 mt-1">
+//                   Joined on: {new Date(user.date_joined).toLocaleDateString()}
+//                 </p>
+//               )}
+
+//               {/* About */}
+//               {profile.description && (
+//                 <div className="mt-2">
+//                   <p className="text-[11px] font-semibold text-navy mb-0.5">
+//                     About
+//                   </p>
+//                   <p className="text-[11px] text-gray-700 leading-snug">
+//                     {profile.description}
+//                   </p>
+//                 </div>
+//               )}
+//             </section>
+
+//             {/* EDUCATION & WORK */}
+//             <section className="px-4 pt-3 pb-3 grid grid-cols-2 gap-3 text-[11px] bg-white">
+//               <div className="bg-[#F6FAFF] rounded-2xl p-3">
+//                 <p className="font-semibold text-navy mb-0.5">Education</p>
+//                 <p className="text-gray-700">{profile.education || "-"}</p>
+//                 {profile.field_of_study && (
+//                   <p className="text-gray-500 mt-0.5">
+//                     {profile.field_of_study}
+//                   </p>
+//                 )}
+//               </div>
+//               <div className="bg-[#FFF9F1] rounded-2xl p-3">
+//                 <p className="font-semibold text-navy mb-0.5">Occupation</p>
+//                 <p className="text-gray-700">
+//                   {mapOccupationLabel(profile.occupation) || "-"}
+//                 </p>
+//                 {profile.annual_income && (
+//                   <p className="text-gray-500 mt-0.5">
+//                     ₹ {profile.annual_income}
+//                   </p>
+//                 )}
+//               </div>
+//             </section>
+
+//             {/* FAMILY & BACKGROUND */}
+//             <section className="px-4 pt-2 pb-3 bg-white text-[11px]">
+//               <div className="bg-[#F7F7F7] rounded-2xl p-3 space-y-1">
+//                 <p className="text-sm font-semibold text-navy mb-1">
+//                   Family & Background
+//                 </p>
+
+//                 {profile.family_status && (
+//                   <p>
+//                     <span className="font-semibold">Family status: </span>
+//                     {profile.family_status}
+//                   </p>
+//                 )}
+//                 {profile.family_worth && (
+//                   <p>
+//                     <span className="font-semibold">Family worth: </span>₹{" "}
+//                     {profile.family_worth}
+//                   </p>
+//                 )}
+//                 {profile.mother_tongue && (
+//                   <p>
+//                     <span className="font-semibold">Mother tongue: </span>
+//                     {profile.mother_tongue}
+//                   </p>
+//                 )}
+//                 {profile.physical_status && (
+//                   <p>
+//                     <span className="font-semibold">Physical status: </span>
+//                     {profile.physical_status}
+//                   </p>
+//                 )}
+//                 {profile.children_count !== null &&
+//                   profile.children_count !== undefined && (
+//                     <p>
+//                       <span className="font-semibold">Children: </span>
+//                       {profile.children_count}
+//                     </p>
+//                   )}
+//                 {profile.willing_inter_caste !== null &&
+//                   profile.willing_inter_caste !== undefined && (
+//                     <p>
+//                       <span className="font-semibold">Inter-caste: </span>
+//                       {profile.willing_inter_caste ? "Willing" : "Not willing"}
+//                     </p>
+//                   )}
+//               </div>
+//             </section>
+
+//             {/* LIFESTYLE */}
+//             {lifestyle && (
+//               <section className="px-4 pt-2 pb-4 bg-white text-[11px]">
+//                 <div className="bg-[#F7F7F7] rounded-2xl p-3 space-y-1">
+//                   <p className="text-sm font-semibold text-navy mb-1">
+//                     Lifestyle
+//                   </p>
+
+//                   {lifestyle.music_genres?.length > 0 && (
+//                     <p>
+//                       <span className="font-semibold">Music: </span>
+//                       {listToText(lifestyle.music_genres)}
+//                     </p>
+//                   )}
+
+//                   {lifestyle.music_activities?.length > 0 && (
+//                     <p>
+//                       <span className="font-semibold">Music activities: </span>
+//                       {listToText(lifestyle.music_activities)}
+//                     </p>
+//                   )}
+
+//                   {lifestyle.movie_tv_genres?.length > 0 && (
+//                     <p>
+//                       <span className="font-semibold">Movies/TV: </span>
+//                       {listToText(lifestyle.movie_tv_genres)}
+//                     </p>
+//                   )}
+
+//                   {lifestyle.reading_preferences?.length > 0 && (
+//                     <p>
+//                       <span className="font-semibold">Reading: </span>
+//                       {listToText(lifestyle.reading_preferences)}
+//                     </p>
+//                   )}
+
+//                   {lifestyle.spoken_languages && (
+//                     <p>
+//                       <span className="font-semibold">Spoken languages: </span>
+//                       {lifestyle.spoken_languages}
+//                     </p>
+//                   )}
+
+//                   {lifestyle.fitness_activity && (
+//                     <p>
+//                       <span className="font-semibold">Fitness: </span>
+//                       {lifestyle.fitness_activity}
+//                     </p>
+//                   )}
+
+//                   {lifestyle.eating_habits && (
+//                     <p>
+//                       <span className="font-semibold">Eating habits: </span>
+//                       {lifestyle.eating_habits}
+//                     </p>
+//                   )}
+
+//                   {lifestyle.smoking && (
+//                     <p>
+//                       <span className="font-semibold">Smoking: </span>
+//                       {lifestyle.smoking}
+//                     </p>
+//                   )}
+
+//                   {lifestyle.drinking && (
+//                     <p>
+//                       <span className="font-semibold">Drinking: </span>
+//                       {lifestyle.drinking}
+//                     </p>
+//                   )}
+//                 </div>
+//               </section>
+//             )}
+//             <section className="px-4 pt-1 pb-4 bg-white text-[11px]">
+//               <div className="mt-2 bg-[#F6FAFF] rounded-2xl border border-gray-100 p-3">
+//                 <div className="flex items-center justify-between mb-1.5">
+//                   <p className="text-sm font-semibold text-navy">
+//                     Contact Details
+//                   </p>
+//                   <span className="text-[10px] text-gray-600">
+//                     {isPremium ? "Premium Plan" : "Premium Feature"}
+//                   </span>
+//                 </div>
+
+//                 {/* Show count for premium users */}
+//                 {isPremium && total > 0 && (
+//                   <p className="text-[10px] text-gray-700 mb-1">
+//                     Contacts revealed:{" "}
+//                     <span className="font-semibold">
+//                       {used}/{remaining}
+//                     </span>
+//                   </p>
+//                 )}
+//                 {/* Button or details */}
+//                 {!contactInfo && (
+//                   <>
+//                     {revealError && (
+//                       <p className="text-[10px] text-red-500 mb-1">
+//                         {revealError}
+//                       </p>
+//                     )}
+
+//                     <button
+//                       type="button"
+//                       onClick={handleRevealContact}
+//                       disabled={revealLoading || !isPremium} // Disable for non-premium
+//                       className={`mt-1 w-full py-2 rounded-full text-[12px] font-semibold shadow disabled:opacity-60 ${
+//                         isPremium
+//                           ? "bg-primary text-white"
+//                           : "bg-gray-300 text-gray-500 cursor-not-allowed"
+//                       }`}
+//                     >
+//                       {revealLoading
+//                         ? "Revealing contact…"
+//                         : isPremium
+//                           ? "Reveal contact details"
+//                           : "Upgrade to reveal contacts"}
+//                     </button>
+
+//                     {!isPremium && !revealError && (
+//                       <p className="text-[10px] text-gray-500 mt-1 text-center">
+//                         Contact details are a
+//                         <span className="font-semibold p-1">
+//                           Premium feature.
+//                         </span>
+//                         Upgrade to see contact details.
+//                       </p>
+//                     )}
+//                   </>
+//                 )}
+
+//                 {contactInfo && (
+//                   <div className="mt-2 space-y-1.5">
+//                     {revealError && (
+//                       <p className="text-[10px] text-red-800 mb-1">
+//                         {revealError}
+//                       </p>
+//                     )}
+
+//                     {contactInfo.phone_number && (
+//                       <div className="flex items-center gap-2 text-[11px] text-gray-800">
+//                         <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm">
+//                           <FiPhone className="w-3.5 h-3.5 text-primary" />
+//                         </div>
+//                         <span>{contactInfo.phone_number}</span>
+//                       </div>
+//                     )}
+
+//                     {contactInfo.email && (
+//                       <div className="flex items-center gap-2 text-[11px] text-gray-800">
+//                         <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm">
+//                           <FiMail className="w-3.5 h-3.5 text-primary" />
+//                         </div>
+//                         <span>{contactInfo.email}</span>
+//                       </div>
+//                     )}
+
+//                     {!contactInfo.phone_number && !contactInfo.email && (
+//                       <p className="text-[10px] text-gray-600">
+//                         Contact details revealed, but no phone/email were
+//                         provided for this profile.
+//                       </p>
+//                     )}
+//                   </div>
+//                 )}
+//               </div>
+//             </section>
+
+//             {/* ADDITIONAL IMAGES SECTION */}
+//             {contactInfo && contactInfo.user_images?.length > 0 ? (
+//               <section className="px-4 pb-4 pt-2 bg-white">
+//                 <p className="text-sm font-semibold text-navy mb-2">
+//                   Additional Profile Photos ({contactInfo.user_images.length})
+//                 </p>
+//                 <div className="grid grid-cols-3 gap-2">
+//                   {contactInfo.user_images.map((img, idx) => {
+//                     // Handle relative image paths
+//                     const imageUrl = img.image.startsWith("http")
+//                       ? img.image
+//                       : `${import.meta.env.VITE_API_BASE_URL}${img.image}`;
+
+//                     return (
+//                       <img
+//                         key={idx}
+//                         src={imageUrl}
+//                         alt={`profile-${idx}`}
+//                         className="w-full h-28 object-cover rounded-lg shadow-sm"
+//                         onError={(e) => {
+//                           e.target.onerror = null;
+//                           e.target.src = "/fallback-image.jpg";
+//                         }}
+//                       />
+//                     );
+//                   })}
+//                 </div>
+//               </section>
+//             ) : (
+//               contactInfo && (
+//                 // Show this only if contactInfo exists but no images
+//                 <section className="px-4 pb-4 bg-white text-[11px] text-gray-500 text-center py-2">
+//                   No additional photos available for this profile.
+//                 </section>
+//               )
+//             )}
+
+//             {/* Show upgrade prompt for free users when no contact revealed */}
+//             {!contactInfo && !isPremium && (
+//               <section className="px-4 pt-0 pb-4 bg-white text-[12px] text-center">
+//                 <div className="bg-[#FFF7E0] text-[#B36A1E] text-sm font-medium rounded-xl px-4 py-4 shadow border border-[#FFE5C0]">
+//                   🔐 Additional images are a <strong>Premium feature</strong>.{" "}
+//                   <br />
+//                   <button
+//                     onClick={() => navigate("/home")}
+//                     className="mt-2 inline-block bg-primary text-white px-5 py-2 rounded-full text-sm font-semibold"
+//                   >
+//                     Upgrade to View Photos
+//                   </button>
+//                 </div>
+//               </section>
+//             )}
+//           </div>
+//         </main>
+
+//         {/* REPORT MODAL */}
+//         {showReportModal && (
+//           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+//             <div className="bg-white rounded-2xl w-full max-w-sm mx-4 p-4">
+//               <div className="flex items-center justify-between mb-3">
+//                 <h2 className="text-sm font-semibold text-navy">Report user</h2>
+//                 <button
+//                   type="button"
+//                   onClick={() => setShowReportModal(false)}
+//                   className="p-1 rounded-full hover:bg-gray-100"
+//                 >
+//                   <FiX className="w-4 h-4 text-gray-500" />
+//                 </button>
+//               </div>
+
+//               <form onSubmit={handleSubmitReport} className="space-y-3 text-xs">
+//                 <div>
+//                   <label
+//                     htmlFor="report-reason"
+//                     className="block mb-1 font-medium text-gray-700"
+//                   >
+//                     Reason
+//                   </label>
+//                   <select
+//                     id="report-reason"
+//                     value={selectedReasonId}
+//                     onChange={(e) => setSelectedReasonId(e.target.value)}
+//                     className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-400"
+//                     disabled={reportReasonsLoading}
+//                   >
+//                     <option value="">Select a reason</option>
+//                     {reportReasons.map((reason) => (
+//                       <option key={reason.id} value={reason.id}>
+//                         {reason.title}
+//                       </option>
+//                     ))}
+//                   </select>
+//                   {reportReasonsLoading && (
+//                     <p className="text-[11px] text-gray-400 mt-1">
+//                       Loading reasons…
+//                     </p>
+//                   )}
+//                 </div>
+
+//                 <div>
+//                   <label
+//                     htmlFor="report-description"
+//                     className="block mb-1 font-medium text-gray-700"
+//                   >
+//                     Additional details (optional)
+//                   </label>
+//                   <textarea
+//                     id="report-description"
+//                     rows={3}
+//                     value={reportDescription}
+//                     onChange={(e) => setReportDescription(e.target.value)}
+//                     className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-400 resize-none"
+//                     placeholder="Describe what happened..."
+//                   />
+//                 </div>
+
+//                 {reportError && (
+//                   <p className="text-[11px] text-red-500">{reportError}</p>
+//                 )}
+//                 {reportSuccess && (
+//                   <p className="text-[11px] text-green-600">{reportSuccess}</p>
+//                 )}
+
+//                 <div className="flex justify-end gap-2 pt-1">
+//                   <button
+//                     type="button"
+//                     onClick={() => setShowReportModal(false)}
+//                     className="px-3 py-1.5 rounded-full border border-gray-300 text-xs text-gray-700"
+//                   >
+//                     Cancel
+//                   </button>
+//                   <button
+//                     type="submit"
+//                     disabled={reportSubmitLoading || !selectedReasonId}
+//                     className="px-3 py-1.5 rounded-full bg-red-500 text-white text-xs disabled:opacity-60"
+//                   >
+//                     {reportSubmitLoading ? "Reporting..." : "Submit report"}
+//                   </button>
+//                 </div>
+//               </form>
+//             </div>
+//           </div>
+//         )}
+
+//         <BottomNav />
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default InterestDetails;
 
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -8,9 +847,13 @@ import {
   FiCheckCircle,
   FiFlag,
   FiX,
+  FiPhone,
+  FiMail,
 } from "react-icons/fi";
 import BottomNav from "../../../components/BottomNav";
 import { getInterestDetails } from "../../../services/match.service";
+import { getUserProfile } from "../../../services/auth.service";
+import { getMembershipFromProfile } from "../../../utils/membership";
 
 const formatHeight = (h) => {
   if (!h) return "";
@@ -49,6 +892,21 @@ const InterestDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [membership, setMembership] = useState({
+    type: "free_trial",
+    isPremium: false,
+    planName: null,
+    planLimit: 0,
+    current_count: 0,
+    limit: 0,
+    expiryDate: null,
+  });
+
+  // Contact reveal state
+  const [contactInfo, setContactInfo] = useState(null);
+  const [revealLoading, setRevealLoading] = useState(false);
+  const [revealError, setRevealError] = useState("");
+
   // ====== REPORT MODAL STATE ======
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReasons, setReportReasons] = useState([]);
@@ -68,6 +926,7 @@ const InterestDetails = () => {
 
     const fetchDetails = async () => {
       try {
+        setLoading(true);
         const token = localStorage.getItem("token");
         if (!token) {
           setError("Please login to view profile.");
@@ -75,6 +934,7 @@ const InterestDetails = () => {
           return;
         }
 
+        // 1) Interest details
         const res = await getInterestDetails(interestId, token);
         console.log("getInterestDetails response:", res);
 
@@ -84,6 +944,23 @@ const InterestDetails = () => {
         }
 
         setData(res.response);
+
+        // 2) Logged-in user profile -> membership (handle errors gracefully)
+        try {
+          const profileRes = await getUserProfile(token);
+          if (profileRes && profileRes.response) {
+            const profile = profileRes.response;
+            const m = getMembershipFromProfile(profile);
+            console.log("Fetched membership:", m);
+            setMembership(m);
+          } else {
+            console.warn("No profile data received");
+            // Use default membership
+          }
+        } catch (profileErr) {
+          console.warn("Could not load user profile for membership:", profileErr);
+          // Use default membership but don't fail the whole page
+        }
       } catch (err) {
         console.error("getInterestDetails error:", err);
         setError("Failed to load profile details");
@@ -112,7 +989,7 @@ const InterestDetails = () => {
               "Content-Type": "application/json",
               ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
-          }
+          },
         );
 
         if (!res.ok) {
@@ -128,7 +1005,7 @@ const InterestDetails = () => {
       } catch (err) {
         console.error("Error fetching report reasons:", err);
         setReportError(
-          err.message || "Could not load reasons. Please try again."
+          err.message || "Could not load reasons. Please try again.",
         );
       } finally {
         setReportReasonsLoading(false);
@@ -137,6 +1014,88 @@ const InterestDetails = () => {
 
     fetchReasons();
   }, [showReportModal]);
+
+  // ----- Computed stats for attempts display -----
+  const isPremium = membership.isPremium;
+  const used = membership.current_count || 0;
+  const remaining = membership.limit || 0;
+  const total = membership.planLimit || (used + remaining);
+
+  const handleRevealContact = async () => {
+    try {
+      setRevealError("");
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setRevealError("Please login to reveal contact details.");
+        return;
+      }
+
+      setRevealLoading(true);
+
+      const rawBase = import.meta.env.VITE_API_BASE_URL || "";
+      const baseUrl = rawBase.replace(/\/+$/, ""); // remove trailing slashes
+      
+      // FIX: Use interestId instead of userId
+      const url = `${baseUrl}/api/match/reveal-contact/${interestId}/`;
+      console.log("Reveal contact URL:", url);
+      
+      const res = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("Response status:", res.status);
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+
+      const json = await res.json();
+      console.log("API response:", json);
+
+      // If status is false, show error
+      if (!json.status) {
+        throw new Error(json.message || "Failed to reveal contact details.");
+      }
+
+      const resp = json.response || {};
+
+      // Case 1: Contact details returned successfully
+      setContactInfo({
+        phone_number: resp.phone_number || null,
+        email: resp.email || null,
+        user_images: resp.user_images || [],
+        horoscope: resp.horoscope || null,
+      });
+
+      // Update membership counters using API response
+      // The API returns current_count and limit
+      setMembership((prev) => ({
+        ...prev,
+        type: "premium", // If this API works, user must be premium
+        isPremium: true,
+        current_count: resp.current_count || prev.current_count,
+        limit: resp.limit || prev.limit,
+        // Calculate planLimit as current_count + limit (total available)
+        planLimit: (resp.current_count || 0) + (resp.limit || 0),
+      }));
+
+      // Check if limit reached - BUT DON'T SHOW ERROR IMMEDIATELY
+      // Let the backend handle the limit check
+      if (resp.limit <= 0) {
+        console.log("User has reached contact reveal limit");
+      }
+    } catch (err) {
+      console.error("Reveal contact failed:", err);
+      setRevealError(
+        err.message || "Could not reveal contact. Please try again.",
+      );
+    } finally {
+      setRevealLoading(false);
+    }
+  };
 
   if (loading) {
     return <p className="p-4 text-sm text-gray-500">Loading details…</p>;
@@ -192,7 +1151,7 @@ const InterestDetails = () => {
             reason_id: Number(selectedReasonId),
             description: reportDescription || undefined,
           }),
-        }
+        },
       );
 
       const result = await res.json();
@@ -210,7 +1169,7 @@ const InterestDetails = () => {
     } catch (err) {
       console.error("Error submitting report:", err);
       setReportError(
-        err.message || "Something went wrong while reporting this user."
+        err.message || "Something went wrong while reporting this user.",
       );
     } finally {
       setReportSubmitLoading(false);
@@ -328,8 +1287,7 @@ const InterestDetails = () => {
               {/* Joined on */}
               {user.date_joined && (
                 <p className="text-[11px] text-gray-500 mt-1">
-                  Joined on:{" "}
-                  {new Date(user.date_joined).toLocaleDateString()}
+                  Joined on: {new Date(user.date_joined).toLocaleDateString()}
                 </p>
               )}
 
@@ -491,6 +1449,159 @@ const InterestDetails = () => {
                 </div>
               </section>
             )}
+            
+            {/* CONTACT REVEAL SECTION - MATCHES MatchDetails LOGIC */}
+            <section className="px-4 pt-1 pb-4 bg-white text-[11px]">
+              <div className="mt-2 bg-[#F6FAFF] rounded-2xl border border-gray-100 p-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-sm font-semibold text-navy">
+                    Contact Details
+                  </p>
+                  <span className="text-[10px] text-gray-600">
+                    {isPremium ? "Premium Plan" : "Premium Feature"}
+                  </span>
+                </div>
+
+                {/* Show count for premium users - MATCHES MatchDetails */}
+                {isPremium && total > 0 && (
+                  <p className="text-[10px] text-gray-700 mb-1">
+                    Contacts revealed:{" "}
+                    <span className="font-semibold">
+                      {used}/{remaining} {/* MatchDetails shows used/remaining */}
+                    </span>
+                  </p>
+                )}
+                
+                {/* Button or details - EXACT SAME LOGIC AS MatchDetails */}
+                {!contactInfo && (
+                  <>
+                    {revealError && (
+                      <p className="text-[10px] text-red-500 mb-1">
+                        {revealError}
+                      </p>
+                    )}
+
+                    {/* IMPORTANT: Same button logic as MatchDetails */}
+                    <button
+                      type="button"
+                      onClick={handleRevealContact}
+                      disabled={revealLoading || !isPremium} // Same as MatchDetails - only checks if premium
+                      className={`mt-1 w-full py-2 rounded-full text-[12px] font-semibold shadow disabled:opacity-60 ${
+                        isPremium
+                          ? "bg-primary text-white"
+                          : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      }`}
+                    >
+                      {/* IMPORTANT: Same button text logic as MatchDetails */}
+                      {revealLoading
+                        ? "Revealing contact…"
+                        : isPremium
+                          ? "Reveal contact details" // Always shows this for premium users
+                          : "Upgrade to reveal contacts"}
+                    </button>
+
+                    {/* Same message as MatchDetails */}
+                    {!isPremium && !revealError && (
+                      <p className="text-[10px] text-gray-500 mt-1 text-center">
+                        Contact details are a
+                        <span className="font-semibold p-1">
+                          Premium feature.
+                        </span>
+                        Upgrade to see contact details.
+                      </p>
+                    )}
+                  </>
+                )}
+
+                {contactInfo && (
+                  <div className="mt-2 space-y-1.5">
+                    {revealError && (
+                      <p className="text-[10px] text-red-800 mb-1">
+                        {revealError}
+                      </p>
+                    )}
+
+                    {contactInfo.phone_number && (
+                      <div className="flex items-center gap-2 text-[11px] text-gray-800">
+                        <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm">
+                          <FiPhone className="w-3.5 h-3.5 text-primary" />
+                        </div>
+                        <span>{contactInfo.phone_number}</span>
+                      </div>
+                    )}
+
+                    {contactInfo.email && (
+                      <div className="flex items-center gap-2 text-[11px] text-gray-800">
+                        <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm">
+                          <FiMail className="w-3.5 h-3.5 text-primary" />
+                        </div>
+                        <span>{contactInfo.email}</span>
+                      </div>
+                    )}
+
+                    {!contactInfo.phone_number && !contactInfo.email && (
+                      <p className="text-[10px] text-gray-600">
+                        Contact details revealed, but no phone/email were
+                        provided for this profile.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* ADDITIONAL IMAGES SECTION */}
+            {contactInfo && contactInfo.user_images?.length > 0 ? (
+              <section className="px-4 pb-4 pt-2 bg-white">
+                <p className="text-sm font-semibold text-navy mb-2">
+                  Additional Profile Photos ({contactInfo.user_images.length})
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {contactInfo.user_images.map((img, idx) => {
+                    // Handle relative image paths
+                    const imageUrl = img.image.startsWith("http")
+                      ? img.image
+                      : `${import.meta.env.VITE_API_BASE_URL}${img.image}`;
+
+                    return (
+                      <img
+                        key={idx}
+                        src={imageUrl}
+                        alt={`profile-${idx}`}
+                        className="w-full h-28 object-cover rounded-lg shadow-sm"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "/fallback-image.jpg";
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </section>
+            ) : (
+              contactInfo && (
+                // Show this only if contactInfo exists but no images
+                <section className="px-4 pb-4 bg-white text-[11px] text-gray-500 text-center py-2">
+                  No additional photos available for this profile.
+                </section>
+              )
+            )}
+
+            {/* Show upgrade prompt for free users when no contact revealed */}
+            {!contactInfo && !isPremium && (
+              <section className="px-4 pt-0 pb-4 bg-white text-[12px] text-center">
+                <div className="bg-[#FFF7E0] text-[#B36A1E] text-sm font-medium rounded-xl px-4 py-4 shadow border border-[#FFE5C0]">
+                  🔐 Additional images are a <strong>Premium feature</strong>.{" "}
+                  <br />
+                  <button
+                    onClick={() => navigate("/home")}
+                    className="mt-2 inline-block bg-primary text-white px-5 py-2 rounded-full text-sm font-semibold"
+                  >
+                    Upgrade to View Photos
+                  </button>
+                </div>
+              </section>
+            )}
           </div>
         </main>
 
@@ -559,9 +1670,7 @@ const InterestDetails = () => {
                   <p className="text-[11px] text-red-500">{reportError}</p>
                 )}
                 {reportSuccess && (
-                  <p className="text-[11px] text-green-600">
-                    {reportSuccess}
-                  </p>
+                  <p className="text-[11px] text-green-600">{reportSuccess}</p>
                 )}
 
                 <div className="flex justify-end gap-2 pt-1">
