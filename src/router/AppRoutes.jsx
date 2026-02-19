@@ -18,15 +18,16 @@ import AboutTeam from "../pages/home/Term&AbtTeam/AboutTeam";
 import InterestDetails from "../pages/home/Interests/InterestDetails";
 import ChatRoom from "../pages/home/Messages/ChatRoom";
 import Notifications from "../pages/home/Notification";
-import Onboarding from "../pages/auth/Onboarding";
+// import Onboarding from "../pages/auth/Onboarding";
 import ForgotPassword from "../pages/auth/ForgotPass/ForgotPassword";
 import ResetPassword from "../pages/auth/ForgotPass/ResetPassword";
 import DeleteAccount from "../pages/home/Userprofile/DeleteAccount";
+import RootRedirect from "./RootRedirect";
 
 const AppRoutes = () => {
   return (
     <Routes>
-        <Route path="/" element={<Onboarding />} />
+        <Route path="/" element={<RootRedirect />} />
       <Route path="/welcome" element={<Welcome />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<RegisterFlow />} />

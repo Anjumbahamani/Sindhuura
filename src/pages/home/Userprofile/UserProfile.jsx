@@ -1258,10 +1258,10 @@ const UserProfile = () => {
             )}
           </section>
         </main>
-<div className="pt-10 pb-10">
+<div className="pt-10 pb-10 px-4">
   <button 
     onClick={() => navigate("/deleteacc")}
-    className="w-full flex items-center justify-center gap-2 text-red-500 text-xs font-semibold py-4 border border-red-100 rounded-3xl bg-red-50"
+    className="w-full flex items-center justify-center gap-2 text-red-500 text-xs font-semibold py-4 border border-red-100 rounded-2xl bg-red-100"
   >
     <FiTrash2 /> Delete My Account
   </button>
@@ -1330,9 +1330,9 @@ const MembershipCard = ({ membership, onUpgradeClick }) => {
               <p className="text-[12px] font-semibold text-navy">
                 Membership: Free Trial
               </p>
-              <p className="text-[10px] text-gray-600">
+              {/* <p className="text-[10px] text-gray-600">
                 Limited access to contacts & chat.
-              </p>
+              </p> */}
             </div>
           </div>
 
@@ -1341,7 +1341,7 @@ const MembershipCard = ({ membership, onUpgradeClick }) => {
           </span>
         </div>
 
-        <div className="mt-1">
+        {/* <div className="mt-1">
           <p className="text-[10px] text-gray-700 mb-1 font-medium">
             Contact reveal attempts
           </p>
@@ -1365,7 +1365,7 @@ const MembershipCard = ({ membership, onUpgradeClick }) => {
             to reveal contacts. After that, you’ll need to upgrade to view more
             contact details.
           </p>
-        </div>
+        </div> */}
 
         <div className="mt-2 rounded-2xl bg-white/80 border border-[#FAD1E5] px-3 py-2">
           <p className="text-[10px] text-gray-700">

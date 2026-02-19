@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -41,8 +39,8 @@ const MatchDetails = () => {
     isPremium: false,
     planName: null,
     planLimit: 0,
-    contactViewed: 0,
-    contactRemaining: 0,
+    current_count: 0,
+    limit: 0,
     expiryDate: null,
   });
 
@@ -50,6 +48,7 @@ const MatchDetails = () => {
   const [contactInfo, setContactInfo] = useState(null);
   const [revealLoading, setRevealLoading] = useState(false);
   const [revealError, setRevealError] = useState("");
+
 
   // Report modal state
   const [showReportModal, setShowReportModal] = useState(false);
@@ -60,6 +59,9 @@ const MatchDetails = () => {
   const [reportSubmitLoading, setReportSubmitLoading] = useState(false);
   const [reportError, setReportError] = useState("");
   const [reportSuccess, setReportSuccess] = useState("");
+
+
+
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -107,17 +109,17 @@ const MatchDetails = () => {
 
   // ----- Computed stats for attempts display -----
   const isPremium = membership.isPremium;
-  const used = membership.contactViewed || 0;
+  const used = membership.current_count || 0;
 
   // For premium, planLimit comes from subscription/contact_limit (or from reveal-contact)
   const totalForPremium =
     membership.planLimit ||
-    (membership.contactViewed || 0) + (membership.contactRemaining || 0);
+    (membership.current_count || 0) + (membership.limit || 0);
 
   const total = isPremium ? totalForPremium : FREE_CONTACT_LIMIT;
 
   const remaining = isPremium
-    ? membership.contactRemaining
+    ? membership.limit
     : Math.max(0, FREE_CONTACT_LIMIT - used);
 
   const handleRevealContact = async () => {
@@ -178,13 +180,13 @@ const MatchDetails = () => {
       // Update membership counters using API response (for subscribed users):
       const isSub = !!resp.is_subscribed;
       const limit =
-        typeof resp.contact_limit === "number"
-          ? resp.contact_limit
+        typeof resp.limit === "number"  // FIX: Use 'limit' from API
+          ? resp.limit
           : membership.planLimit;
       const views =
-        typeof resp.views_count === "number"
-          ? resp.views_count
-          : membership.contactViewed;
+        typeof resp.current_count === "number"  // FIX: Use 'current_count' from API
+          ? resp.current_count
+          : membership.current_count;
       const remainingFromLimit =
         typeof limit === "number" ? Math.max(0, limit - views) : remaining;
 
@@ -194,7 +196,7 @@ const MatchDetails = () => {
         isPremium: isSub,
         planName: resp.subscription_plan || prev.planName,
         planLimit: limit,
-        contactViewed: views,
+        current_count: views,
         contactRemaining: remainingFromLimit,
       }));
 
@@ -511,7 +513,7 @@ const MatchDetails = () => {
                 )}
 
                 {/* CONTACT REVEAL SECTION */}
-                <section className="px-4 pt-1 pb-4 bg-white text-[11px]">
+                {/* <section className="px-4 pt-1 pb-4 bg-white text-[11px]">
                   <div className="mt-2 bg-[#F6FAFF] rounded-2xl border border-gray-100 p-3">
                     <div className="flex items-center justify-between mb-1.5">
                       <p className="text-sm font-semibold text-navy">
@@ -522,7 +524,7 @@ const MatchDetails = () => {
                       </span>
                     </div>
 
-                    {/* Attempts / info line */}
+                   
                     {isPremium && total > 0 && (
                       <p className="text-[10px] text-gray-700 mb-1">
                         Contacts used:{" "}
@@ -532,7 +534,7 @@ const MatchDetails = () => {
                       </p>
                     )}
 
-                    {/* Button or details */}
+                  
                     {!contactInfo && (
                       <>
                         {revealError && (
@@ -629,6 +631,155 @@ const MatchDetails = () => {
                       <strong>Premium feature</strong>. <br />
                       <button
                         onClick={() => alert("Redirect to upgrade")}
+                        className="mt-2 inline-block bg-primary text-white px-5 py-2 rounded-full text-sm font-semibold"
+                      >
+                        Upgrade to View Photos
+                      </button>
+                    </div>
+                  </section>
+                )}
+              </div>
+            </>
+          )} */}
+           <section className="px-4 pt-1 pb-4 bg-white text-[11px]">
+                  <div className="mt-2 bg-[#F6FAFF] rounded-2xl border border-gray-100 p-3">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-sm font-semibold text-navy">
+                        Contact Details
+                      </p>
+                      <span className="text-[10px] text-gray-600">
+                        {isPremium ? "Premium Plan" : "Premium Feature"}
+                      </span>
+                    </div>
+
+                    {/* Show count for premium users */}
+                    {isPremium && (
+                      <p className="text-[10px] text-gray-700 mb-1">
+                        Contacts revealed:{" "}
+                        <span className="font-semibold">
+                          {used}/{total}
+                        </span>
+                      </p>
+                    )}
+
+                    {/* Button or details */}
+                    {!contactInfo && (
+                      <>
+                        {revealError && (
+                          <p className="text-[10px] text-red-500 mb-1">
+                            {revealError}
+                          </p>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={handleRevealContact}
+                          disabled={revealLoading || !isPremium}  // Disable for non-premium
+                          className={`mt-1 w-full py-2 rounded-full text-[12px] font-semibold shadow disabled:opacity-60 ${
+                            isPremium 
+                              ? "bg-primary text-white" 
+                              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          }`}
+                        >
+                          {revealLoading
+                            ? "Revealing contact…"
+                            : isPremium
+                            ? "Reveal contact details"
+                            : "Upgrade to reveal contacts"}
+                        </button>
+
+                        {!isPremium && !revealError && (
+                          <p className="text-[10px] text-gray-500 mt-1 text-center">
+                            Contact details are a
+                            <span className="font-semibold">
+                              Premium feature
+                            </span>
+                            . Upgrade to see contact details.
+                          </p>
+                        )}
+                      </>
+                    )}
+
+                    {contactInfo && (
+                      <div className="mt-2 space-y-1.5">
+                        {revealError && (
+                          <p className="text-[10px] text-red-800 mb-1">
+                            {revealError}
+                          </p>
+                        )}
+
+                        {contactInfo.phone_number && (
+                          <div className="flex items-center gap-2 text-[11px] text-gray-800">
+                            <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm">
+                              <FiPhone className="w-3.5 h-3.5 text-primary" />
+                            </div>
+                            <span>{contactInfo.phone_number}</span>
+                          </div>
+                        )}
+
+                        {contactInfo.email && (
+                          <div className="flex items-center gap-2 text-[11px] text-gray-800">
+                            <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm">
+                              <FiMail className="w-3.5 h-3.5 text-primary" />
+                            </div>
+                            <span>{contactInfo.email}</span>
+                          </div>
+                        )}
+
+                        {!contactInfo.phone_number && !contactInfo.email && (
+                          <p className="text-[10px] text-gray-600">
+                            Contact details revealed, but no phone/email were
+                            provided for this profile.
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </section>
+
+                {/* ADDITIONAL IMAGES SECTION */}
+                {contactInfo && contactInfo.user_images?.length > 0 ? (
+                  <section className="px-4 pb-4 pt-2 bg-white">
+                    <p className="text-sm font-semibold text-navy mb-2">
+                      Additional Profile Photos ({contactInfo.user_images.length})
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {contactInfo.user_images.map((img, idx) => {
+                        // Handle relative image paths
+                        const imageUrl = img.image.startsWith("http") 
+                          ? img.image 
+                          : `${import.meta.env.VITE_API_BASE_URL}${img.image}`;
+                        
+                        return (
+                          <img
+                            key={idx}
+                            src={imageUrl}
+                            alt={`profile-${idx}`}
+                            className="w-full h-28 object-cover rounded-lg shadow-sm"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "/fallback-image.jpg";
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                  </section>
+                ) : contactInfo && (
+                  // Show this only if contactInfo exists but no images
+                  <section className="px-4 pb-4 bg-white text-[11px] text-gray-500 text-center py-2">
+                    No additional photos available for this profile.
+                  </section>
+                )}
+
+                {/* Show upgrade prompt for free users when no contact revealed */}
+                {!contactInfo && !isPremium && (
+                  <section className="px-4 pt-0 pb-4 bg-white text-[12px] text-center">
+                    <div className="bg-[#FFF7E0] text-[#B36A1E] text-sm font-medium rounded-xl px-4 py-4 shadow border border-[#FFE5C0]">
+                      🔐 Additional images are a{" "}
+                      <strong>Premium feature</strong>. <br />
+                      <button
+                        onClick={() => navigate("/home")}
                         className="mt-2 inline-block bg-primary text-white px-5 py-2 rounded-full text-sm font-semibold"
                       >
                         Upgrade to View Photos
