@@ -65,8 +65,8 @@ export const INCOME_MAP = {
 export const FAMILY_STATUS_MAP = {
   "Middle class": "middle",
   "Upper middle class": "upper_middle",
-  "Rich": "Rich",
-  "Affluent": "Affluent", 
+  "Rich": "rich",
+  "Affluent": "affluent", 
 };
 
 /**
