@@ -174,3 +174,21 @@ export const getNotifications = async (token) => {
     },
   });
 };
+
+
+export const markAsDontShow = async (targetUserId, token) => {
+  const response = await fetch(`https://admin.sindhuura.com/api/match/dont-show/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ user_id: targetUserId }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to mark profile as don't show");
+  }
+
+  return response.json();
+};

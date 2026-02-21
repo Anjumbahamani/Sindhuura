@@ -388,7 +388,7 @@ const Home = () => {
               return;
             }
 
-            alert("Payment successful! Subscription activated.");
+            // alert("Payment successful! Subscription activated.");
 
             // Optional: refresh profile
             // const prof = await getUserProfile(token);
@@ -462,7 +462,7 @@ const Home = () => {
     );
   };
   return (
-    <div className="min-h-screen bg-white pb-5">
+    <div className="min-h-screen bg-white pb-5 overflow-hidden">
       <div className="max-w-md mx-auto min-h-screen bg-white pb-10">
         {/* TOP GRADIENT SECTION (common for both tabs) */}
         <div className="bg-gradient-to-b from-[#FFF7E9] via-[#FFF9F1] to-[#FFFFFF] pb-4 shadow-sm">

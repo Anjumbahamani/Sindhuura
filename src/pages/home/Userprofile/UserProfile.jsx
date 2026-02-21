@@ -582,7 +582,7 @@ const UserProfile = () => {
               </section>
 
               {/* PROFILE SUMMARY – ID + LOCATION ONLY (no duplicated fields) */}
-              <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-3">
+             <section className="rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-3 bg-gradient-to-br from-blue-100 to-white">
                 <p className="text-[10px] text-red-500 font-semibold">
                   Profile ID:{" "}
                   <span className="text-gray-950">
@@ -628,7 +628,7 @@ const UserProfile = () => {
               </section>
 
               {/* BASIC DETAILS (EDITABLE) */}
-              <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-2">
+              <section className="rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-2 bg-gradient-to-br from-red-100 to-white">
                 <p className="text-sm font-semibold text-navy mb-1">
                   Basic Details
                 </p>
@@ -703,7 +703,7 @@ const UserProfile = () => {
               </section>
 
               {/* EDUCATION & CAREER (EDITABLE, no duplicates in Basic) */}
-              <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-2">
+             <section className="rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-3 bg-gradient-to-br from-yellow-50 to-white">
                 <p className="text-sm font-semibold text-navy mb-1">
                   Education & Career
                 </p>
@@ -763,7 +763,7 @@ const UserProfile = () => {
               </section>
 
               {/* LIFESTYLE & INTERESTS (EDITABLE) */}
-              <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-3">
+             <section className="rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-2 bg-gradient-to-br from-pink-50 to-white">
                 <p className="text-sm font-semibold text-navy mb-1">
                   Lifestyle & Interests
                 </p>
@@ -927,7 +927,7 @@ const UserProfile = () => {
               </section>
 
               {/* FAMILY DETAILS (EDITABLE) */}
-              <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-2">
+              <section className="rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-2 bg-gradient-to-br from-indigo-50 to-white">
                 <p className="text-sm font-semibold text-navy mb-1">
                   Family Details
                 </p>
@@ -1009,7 +1009,7 @@ const UserProfile = () => {
               </section>
 
               {/* BIRTH & HOROSCOPE (EDITABLE) */}
-              <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-2">
+               <section className="rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-2 bg-gradient-to-br from-red-100 to-white">
                 <p className="text-sm font-semibold text-navy mb-1">
                   Birth & Horoscope
                 </p>

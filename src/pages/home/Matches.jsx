@@ -14,6 +14,7 @@ import {
 import {
   getMatchingProfiles,
   sendInterestRequest,
+   markAsDontShow, 
 } from "../../services/match.service";
 
 const Matches = () => {
@@ -24,6 +25,8 @@ const Matches = () => {
   const [sendingId, setSendingId] = useState(null);
   const [interestedMap, setInterestedMap] = useState({}); // { [profileId]: status }
   const [showFilters, setShowFilters] = useState(false);
+  const [dontShowMap, setDontShowMap] = useState({});
+  const [hidingId, setHidingId] = useState(null);
 
   const [filters, setFilters] = useState({
     education: "",
@@ -85,7 +88,7 @@ const Matches = () => {
         [profile.id]: status,
       }));
 
-      alert("Interest sent successfully!");
+      // alert("Interest sent successfully!");
     } catch (err) {
       console.error("❌ Failed to send interest:", err);
       alert("Could not send interest. Please try again.");
@@ -93,7 +96,36 @@ const Matches = () => {
       setSendingId(null);
     }
   };
+ const handleDontShow = async (profile) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Please login again.");
+        return;
+      }
 
+      setHidingId(profile.id);
+      
+      // Use profile.user_id if available, fallback to profile.id
+      const targetUserId = profile.user_id || profile.id;
+      await markAsDontShow(targetUserId, token);
+
+      // Update local state to mark as hidden
+      setDontShowMap((prev) => ({
+        ...prev,
+        [profile.id]: true,
+      }));
+
+      // ✅ Optional: Remove from list immediately for better UX
+      setProfiles((prev) => prev.filter((p) => p.id !== profile.id));
+      
+    } catch (err) {
+      console.error("❌ Failed to mark as don't show:", err);
+      alert("Could not hide this profile. Please try again.");
+    } finally {
+      setHidingId(null);
+    }
+  };
   return (
     <div className="min-h-screen bg-white pb-20">
       <div className="max-w-md mx-auto min-h-screen bg-white pb-20">
@@ -150,13 +182,17 @@ const Matches = () => {
 
           <div className="space-y-3">
             {!loading &&
-              profiles.map((p) => (
+              profiles .filter((p) => !dontShowMap[p.id])
+                .map((p) => (
                 <ProfileCard
                   key={p.id}
                   profile={p}
                   onSendInterest={handleSendInterest}
                   sending={sendingId === p.id}
                   interestStatus={interestedMap[p.id]}
+                   onDontShow={handleDontShow} // ✅ Added prop
+                  hiding={hidingId === p.id} // ✅ Added prop
+                  dontShowStatus={dontShowMap[p.id]} // ✅ Added prop
                   onOpenDetails={() =>
                     navigate(`/matches/${p.user_id || p.user || p.id}`)
                   }
@@ -290,7 +326,11 @@ const ProfileCard = ({
   onSendInterest,
   sending,
   interestStatus,
+   onDontShow, // ✅ Added
+  hiding, // ✅ Added
+  dontShowStatus, // ✅ Added
   onOpenDetails,
+
 }) => {
   const {
     profile_image,
@@ -375,6 +415,8 @@ const ProfileCard = ({
       <div className="mt-3 border-t border-gray-100 px-4 py-3 flex gap-2">
         <button
           type="button"
+           onClick={() => onDontShow && onDontShow(profile)} 
+          disabled={hiding || !!dontShowStatus}
           className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-2 rounded-full border border-gray-300 text-[12px] text-gray-600"
         >
           <FiX className="w-3 h-3" />

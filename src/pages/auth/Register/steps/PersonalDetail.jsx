@@ -345,7 +345,7 @@ const PersonalDetailsStep = ({ data, setData, onNext, onBack }) => {
         </button>
 
         <p className="text-xs text-center text-gray-400 mt-3">
-          Need help? Call <span className="font-medium">8144-99-88-77</span>
+          Need help? Call <span className="font-medium">+91 9620559231</span>
         </p>
       </div>
 

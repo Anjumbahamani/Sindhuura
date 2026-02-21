@@ -867,6 +867,7 @@ import {
   FiMail,
   FiFlag,
   FiX,
+    FiMaximize2, 
 } from "react-icons/fi";
 import BottomNav from "../../../components/BottomNav";
 import { getMatchDetails } from "../../../services/match.service";
@@ -907,7 +908,7 @@ const MatchDetails = () => {
   const [contactInfo, setContactInfo] = useState(null);
   const [revealLoading, setRevealLoading] = useState(false);
   const [revealError, setRevealError] = useState("");
-
+  const [selectedImage, setSelectedImage] = useState(null);
   // Report modal state
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReasons, setReportReasons] = useState([]);
@@ -1213,6 +1214,13 @@ const MatchDetails = () => {
       setReportSubmitLoading(false);
     }
   };
+    useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape") setSelectedImage(null);
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, []);
   return (
     <div className="min-h-screen bg-white pb-20">
       <div className="max-w-md mx-auto min-h-screen bg-white pb-20">
@@ -1580,6 +1588,34 @@ const MatchDetails = () => {
             </>
           )}
         </main>
+         {selectedImage && (
+          <div 
+            className="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center p-4"
+            onClick={() => setSelectedImage(null)}
+          >
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedImage(null);
+              }}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors z-[61]"
+            >
+              <FiX className="w-6 h-6" />
+            </button>
+            
+            <img
+              src={selectedImage}
+              alt="Fullscreen view"
+              className="max-w-full max-h-full object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+            
+            <p className="absolute bottom-6 left-0 right-0 text-center text-white/60 text-sm">
+              Tap anywhere or press Escape to close
+            </p>
+          </div>
+        )}
         {showReportModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
             <div className="bg-white rounded-2xl w-full max-w-sm mx-4 p-4">
