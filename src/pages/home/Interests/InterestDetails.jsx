@@ -849,6 +849,7 @@ import {
   FiX,
   FiPhone,
   FiMail,
+      FiMaximize2, 
 } from "react-icons/fi";
 import BottomNav from "../../../components/BottomNav";
 import { getInterestDetails } from "../../../services/match.service";
@@ -906,7 +907,7 @@ const InterestDetails = () => {
   const [contactInfo, setContactInfo] = useState(null);
   const [revealLoading, setRevealLoading] = useState(false);
   const [revealError, setRevealError] = useState("");
-
+  const [selectedImage, setSelectedImage] = useState(null);
   // ====== REPORT MODAL STATE ======
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReasons, setReportReasons] = useState([]);
@@ -916,6 +917,13 @@ const InterestDetails = () => {
   const [reportSubmitLoading, setReportSubmitLoading] = useState(false);
   const [reportError, setReportError] = useState("");
   const [reportSuccess, setReportSuccess] = useState("");
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape") setSelectedImage(null);
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, []);
 
   useEffect(() => {
     if (!interestId) {
@@ -1175,7 +1183,7 @@ const InterestDetails = () => {
       setReportSubmitLoading(false);
     }
   };
-
+ 
   return (
     <div className="min-h-screen bg-white pb-20">
       <div className="max-w-md mx-auto min-h-screen bg-white pb-20">
@@ -1552,40 +1560,48 @@ const InterestDetails = () => {
 
             {/* ADDITIONAL IMAGES SECTION */}
             {contactInfo && contactInfo.user_images?.length > 0 ? (
-              <section className="px-4 pb-4 pt-2 bg-white">
-                <p className="text-sm font-semibold text-navy mb-2">
-                  Additional Profile Photos ({contactInfo.user_images.length})
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  {contactInfo.user_images.map((img, idx) => {
-                    // Handle relative image paths
-                    const imageUrl = img.image.startsWith("http")
-                      ? img.image
-                      : `${import.meta.env.VITE_API_BASE_URL}${img.image}`;
+                  <section className="px-4 pb-4 pt-2 bg-white">
+                    <p className="text-sm font-semibold text-navy mb-2 flex items-center gap-1">
+                      Additional Profile Photos ({contactInfo.user_images.length})
+                      <FiMaximize2 className="w-3 h-3 text-gray-400" />
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {contactInfo.user_images.map((img, idx) => {
+                        const imageUrl = img.image.startsWith("http")
+                          ? img.image
+                          : `${import.meta.env.VITE_API_BASE_URL}${img.image}`;
 
-                    return (
-                      <img
-                        key={idx}
-                        src={imageUrl}
-                        alt={`profile-${idx}`}
-                        className="w-full h-28 object-cover rounded-lg shadow-sm"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "/fallback-image.jpg";
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-              </section>
-            ) : (
-              contactInfo && (
-                // Show this only if contactInfo exists but no images
-                <section className="px-4 pb-4 bg-white text-[11px] text-gray-500 text-center py-2">
-                  No additional photos available for this profile.
-                </section>
-              )
-            )}
+                        return (
+                          <div 
+                            key={idx} 
+                            className="relative aspect-square cursor-pointer overflow-hidden rounded-lg shadow-sm hover:opacity-90 transition-opacity"
+                            onClick={() => setSelectedImage(imageUrl)}
+                          >
+                            <img
+                              src={imageUrl}
+                              alt={`profile-${idx}`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "/fallback-image.jpg";
+                              }}
+                            />
+                            {/* Tap hint overlay */}
+                            <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
+                              <FiMaximize2 className="w-5 h-5 text-white opacity-0 hover:opacity-100 transition-opacity drop-shadow-lg" />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                ) : (
+                  contactInfo && (
+                    <section className="px-4 pb-4 bg-white text-[11px] text-gray-500 text-center py-2">
+                      No additional photos available for this profile.
+                    </section>
+                  )
+                )}
 
             {/* Show upgrade prompt for free users when no contact revealed */}
             {!contactInfo && !isPremium && (
@@ -1604,7 +1620,34 @@ const InterestDetails = () => {
             )}
           </div>
         </main>
-
+  {selectedImage && (
+          <div 
+            className="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center p-4"
+            onClick={() => setSelectedImage(null)}
+          >
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedImage(null);
+              }}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors z-[61]"
+            >
+              <FiX className="w-6 h-6" />
+            </button>
+            
+            <img
+              src={selectedImage}
+              alt="Fullscreen view"
+              className="max-w-full max-h-full object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+            
+            <p className="absolute bottom-6 left-0 right-0 text-center text-white/60 text-sm">
+              Tap anywhere or press Escape to close
+            </p>
+          </div>
+        )}
         {/* REPORT MODAL */}
         {showReportModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">

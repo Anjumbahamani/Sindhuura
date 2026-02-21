@@ -919,6 +919,14 @@ const MatchDetails = () => {
   const [reportError, setReportError] = useState("");
   const [reportSuccess, setReportSuccess] = useState("");
 
+useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape") setSelectedImage(null);
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, []);
+
   useEffect(() => {
     const fetchDetails = async () => {
       try {
@@ -1214,13 +1222,7 @@ const MatchDetails = () => {
       setReportSubmitLoading(false);
     }
   };
-    useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === "Escape") setSelectedImage(null);
-    };
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, []);
+    
   return (
     <div className="min-h-screen bg-white pb-20">
       <div className="max-w-md mx-auto min-h-screen bg-white pb-20">
@@ -1534,35 +1536,42 @@ const MatchDetails = () => {
                 {/* ADDITIONAL IMAGES SECTION */}
                 {contactInfo && contactInfo.user_images?.length > 0 ? (
                   <section className="px-4 pb-4 pt-2 bg-white">
-                    <p className="text-sm font-semibold text-navy mb-2">
-                      Additional Profile Photos (
-                      {contactInfo.user_images.length})
+                    <p className="text-sm font-semibold text-navy mb-2 flex items-center gap-1">
+                      Additional Profile Photos ({contactInfo.user_images.length})
+                      <FiMaximize2 className="w-3 h-3 text-gray-400" />
                     </p>
                     <div className="grid grid-cols-3 gap-2">
                       {contactInfo.user_images.map((img, idx) => {
-                        // Handle relative image paths
                         const imageUrl = img.image.startsWith("http")
                           ? img.image
                           : `${import.meta.env.VITE_API_BASE_URL}${img.image}`;
 
                         return (
-                          <img
-                            key={idx}
-                            src={imageUrl}
-                            alt={`profile-${idx}`}
-                            className="w-full h-28 object-cover rounded-lg shadow-sm"
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src = "/fallback-image.jpg";
-                            }}
-                          />
+                          <div 
+                            key={idx} 
+                            className="relative aspect-square cursor-pointer overflow-hidden rounded-lg shadow-sm hover:opacity-90 transition-opacity"
+                            onClick={() => setSelectedImage(imageUrl)}
+                          >
+                            <img
+                              src={imageUrl}
+                              alt={`profile-${idx}`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "/fallback-image.jpg";
+                              }}
+                            />
+                            {/* Tap hint overlay */}
+                            <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
+                              <FiMaximize2 className="w-5 h-5 text-white opacity-0 hover:opacity-100 transition-opacity drop-shadow-lg" />
+                            </div>
+                          </div>
                         );
                       })}
                     </div>
                   </section>
                 ) : (
                   contactInfo && (
-                    // Show this only if contactInfo exists but no images
                     <section className="px-4 pb-4 bg-white text-[11px] text-gray-500 text-center py-2">
                       No additional photos available for this profile.
                     </section>
