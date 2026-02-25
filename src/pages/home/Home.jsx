@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import BottomNav from "../../components/BottomNav";
 import { useNavigate } from "react-router-dom";
+import logo from "../../assets/logo-1.png";
 import {
   FiBell,
   FiMenu,
@@ -310,7 +311,13 @@ const Home = () => {
         alert("Please login to continue.");
         return;
       }
-
+ if (membership?.isPremium) {
+      alert(
+        "You already have an active subscription. " +
+          "You can purchase a new plan after your current one expires."
+      );
+      return;
+    }
       if (!RAZORPAY_KEY_ID) {
         alert("Missing Razorpay Key ID (VITE_RAZORPAY_KEY_ID).");
         return;
@@ -329,6 +336,14 @@ const Home = () => {
         { subscription_id: plan.id },
         token,
       );
+
+if (orderRes?.status === false) {
+      alert(
+        orderRes?.message ||
+          "You already have an active subscription. Please try again later."
+      );
+      return;
+    }
 
       const orderData = orderRes?.response ?? orderRes;
 
@@ -469,7 +484,7 @@ const Home = () => {
           {/* Status bar spacer */}
           <div className="h-3" />
           {/* Top right icons row */}
-          <div className="relative flex items-center w-full h-8 rounded-full bg-white shadow-sm p-4 m-2">
+          <div className="relative flex items-center w-auto h-8 rounded-full bg-white shadow-sm p-4 m-2">
             {/* Search icon */}
             <FiSearch className="w-4 h-4 mr-2 text-navy" />
 
@@ -554,7 +569,7 @@ const Home = () => {
                       : "text-navy"
                   }`}
               >
-                PRIME
+                UPGRADE
                 <span
                   className={`ml-0.5 text-[9px] ${
                     membershipTab === "prime" ? "text-white" : "text-red-500"
@@ -917,11 +932,17 @@ const RegularHomeSections = ({
             Icon={FiStar}
             onClick={onAddStoryClick}
           />
-          <ProfileActionCard
-            title="Good luck on your journey"
+          {/* <ProfileActionCard
+            title="“Sindhuura is not just a name, it's a feeling for every Indian"
             iconBg="bg-[#FFF0F5]"
             Icon={FiHeart}
-          />
+          /> */}
+        </div>
+        <div className="flex-1 bg-white rounded-2xl shadow-sm px-2 py-2 flex flex-col items-center mt-2">
+          <img src={logo} alt="" className="w-16 mx-auto mt-2" />
+          <p className="text-[11px] text-navy font-medium mt-1">
+            Sindhuura is not just a name, it's a feeling for every Indian
+          </p>
         </div>
       </section>
 

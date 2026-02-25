@@ -1353,22 +1353,22 @@ useEffect(() => {
 
                 {/* EDUCATION & WORK */}
                 <section className="px-4 pt-3 pb-3 grid grid-cols-2 gap-3 text-[11px] bg-white">
-                  <div className="bg-[#F6FAFF] rounded-2xl p-3">
+                   <div className="rounded-2xl p-3 bg-gradient-to-br from-blue-50 via-blue-100 to-blue-50 border border-blue-100/70">
                     <p className="font-semibold text-navy mb-0.5">Education</p>
-                    <p className="text-gray-700">{profile.education || "-"}</p>
+                    <p className="text-gray-800">{profile.education || "-"}</p>
                     {profile.field_of_study && (
-                      <p className="text-gray-500 mt-0.5">
+                      <p className="text-gray-600 mt-0.5">
                         {profile.field_of_study}
                       </p>
                     )}
                   </div>
-                  <div className="bg-[#FFF9F1] rounded-2xl p-3">
+                  <div className="rounded-2xl p-3 bg-gradient-to-br from-amber-50 via-orange-100 to-amber-50 border border-amber-100/70">
                     <p className="font-semibold text-navy mb-0.5">Occupation</p>
-                    <p className="text-gray-700">
+                    <p className="text-gray-800">
                       {mapOccupationLabel(profile.occupation)}
                     </p>
                     {profile.annual_income && (
-                      <p className="text-gray-500 mt-0.5">
+                      <p className="text-gray-700 mt-0.5">
                         ₹ {profile.annual_income} LPA
                       </p>
                     )}
@@ -1378,37 +1378,37 @@ useEffect(() => {
                 {/* LIFESTYLE */}
                 {lifestyle && (
                   <section className="px-4 pt-2 pb-3 bg-white text-[11px]">
-                    <div className="bg-[#F7F7F7] rounded-2xl p-3 space-y-1">
+                   <div className="rounded-2xl p-3 space-y-1 bg-gradient-to-br from-emerald-50 via-emerald-100 to-teal-50 border border-emerald-100/70">
                       <p className="text-sm font-semibold text-navy mb-1">
                         Lifestyle
                       </p>
 
                       {lifestyle.music_genres?.length > 0 && (
-                        <p>
+                          <p className="text-gray-800">
                           <span className="font-semibold">Music: </span>
                           {lifestyle.music_genres.join(", ")}
                         </p>
                       )}
                       {lifestyle.movie_tv_genres?.length > 0 && (
-                        <p>
+                          <p className="text-gray-800">
                           <span className="font-semibold">Movies/TV: </span>
                           {lifestyle.movie_tv_genres.join(", ")}
                         </p>
                       )}
                       {lifestyle.favorite_sports && (
-                        <p>
+                          <p className="text-gray-800">
                           <span className="font-semibold">Sports: </span>
                           {lifestyle.favorite_sports}
                         </p>
                       )}
                       {lifestyle.fitness_activity && (
-                        <p>
+                         <p className="text-gray-800">
                           <span className="font-semibold">Fitness: </span>
                           {lifestyle.fitness_activity}
                         </p>
                       )}
                       {lifestyle.spoken_languages && (
-                        <p>
+                          <p className="text-gray-800">
                           <span className="font-semibold">
                             Spoken languages:{" "}
                           </span>
@@ -1416,19 +1416,19 @@ useEffect(() => {
                         </p>
                       )}
                       {lifestyle.eating_habits && (
-                        <p>
+                          <p className="text-gray-800">
                           <span className="font-semibold">Eating habits: </span>
                           {lifestyle.eating_habits}
                         </p>
                       )}
                       {lifestyle.smoking && (
-                        <p>
+                          <p className="text-gray-800">
                           <span className="font-semibold">Smoking: </span>
                           {lifestyle.smoking}
                         </p>
                       )}
                       {lifestyle.drinking && (
-                        <p>
+                          <p className="text-gray-800">
                           <span className="font-semibold">Drinking: </span>
                           {lifestyle.drinking}
                         </p>
@@ -1438,7 +1438,7 @@ useEffect(() => {
                 )}
 
                 <section className="px-4 pt-1 pb-4 bg-white text-[11px]">
-                  <div className="mt-2 bg-[#F6FAFF] rounded-2xl border border-gray-100 p-3">
+                  <div className="mt-2 rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 via-sky-100 to-sky-50 p-3">
                     <div className="flex items-center justify-between mb-1.5">
                       <p className="text-sm font-semibold text-navy">
                         Contact Details
@@ -1448,7 +1448,6 @@ useEffect(() => {
                       </span>
                     </div>
 
-                    {/* Show count for premium users */}
                     {/* Show count for premium users */}
                     {isPremium && total > 0 && (
                       <p className="text-[10px] text-gray-700 mb-1">
@@ -1536,6 +1535,7 @@ useEffect(() => {
                 {/* ADDITIONAL IMAGES SECTION */}
                 {contactInfo && contactInfo.user_images?.length > 0 ? (
                   <section className="px-4 pb-4 pt-2 bg-white">
+                      <div className="rounded-2xl p-3 bg-gradient-to-br from-pink-50 via-pink-100 to-rose-50 border border-pink-100/70">
                     <p className="text-sm font-semibold text-navy mb-2 flex items-center gap-1">
                       Additional Profile Photos ({contactInfo.user_images.length})
                       <FiMaximize2 className="w-3 h-3 text-gray-400" />
@@ -1569,12 +1569,15 @@ useEffect(() => {
                         );
                       })}
                     </div>
+                    </div>
                   </section>
                 ) : (
                   contactInfo && (
-                    <section className="px-4 pb-4 bg-white text-[11px] text-gray-500 text-center py-2">
-                      No additional photos available for this profile.
-                    </section>
+                    <section className="px-4 pb-4 bg-white text-[11px] text-center py-2">
+      <div className="rounded-2xl px-3 py-2 bg-slate-50 text-gray-600 border border-slate-200">
+        No additional photos available for this profile.
+      </div>
+    </section>
                   )
                 )}
 
@@ -1627,7 +1630,8 @@ useEffect(() => {
         )}
         {showReportModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white rounded-2xl w-full max-w-sm mx-4 p-4">
+                        <div className="rounded-2xl w-full max-w-sm mx-4 p-4 bg-gradient-to-b from-red-50 via-white to-white border border-red-100/70">
+
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-navy">Report user</h2>
                 <button

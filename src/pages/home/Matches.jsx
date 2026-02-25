@@ -36,6 +36,7 @@ const Matches = () => {
     annual_income: "",
     family_status: "",
     marital_status: "",
+     job_type: "",  
 
     // 👇 lifestyle
     smoking: "",
@@ -273,6 +274,42 @@ const Matches = () => {
                 <option value="occasionally">Occasionally</option>
                 <option value="quit">Quit</option>
               </select>
+              {/* Education */}
+<select
+  value={filters.education}
+  onChange={(e) =>
+    setFilters((f) => ({ ...f, education: e.target.value }))
+  }
+  className="w-full mb-2 border rounded-xl px-3 py-2 text-sm"
+>
+  <option value="">Education</option>
+  <option value="bachelors">Bachelors</option>
+  <option value="masters">Masters</option>
+</select>
+
+{/* Job type – NEW */}
+<select
+  value={filters.job_type}
+  onChange={(e) =>
+    setFilters((f) => ({ ...f, job_type: e.target.value }))
+  }
+  className="w-full mb-2 border rounded-xl px-3 py-2 text-sm"
+>
+  <option value="">Job type</option>
+  <option value="private">Private</option>
+  <option value="government">Government</option>
+  <option value="business">Business</option>
+</select>
+
+{/* City */}
+<input
+  placeholder="City"
+  value={filters.city}
+  onChange={(e) =>
+    setFilters((f) => ({ ...f, city: e.target.value }))
+  }
+  className="w-full mb-2 border rounded-xl px-3 py-2 text-sm"
+/>
 
               {/* Actions */}
               <div className="flex gap-2">
@@ -286,6 +323,7 @@ const Matches = () => {
                       annual_income: "",
                       family_status: "",
                       marital_status: "",
+                      job_type: "",
                       smoking: "",
                       drinking: "",
                       eating_habits: "",

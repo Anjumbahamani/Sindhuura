@@ -29,7 +29,7 @@ const ForgotPassword = () => {
           "Accept": "application/json"
         },
         body: JSON.stringify({
-          phone_number: cleanPhone, // No +91 here based on your Login API response
+         phone_number: `+91${cleanPhone}`, // No +91 here based on your Login API response
           email: cleanEmail,
         }),
       });

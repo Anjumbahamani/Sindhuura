@@ -26,6 +26,11 @@ const INCOME = [
   { label: "25–50 Lakhs", value: "25-50" },
   { label: "50+ Lakhs", value: "50+" },
 ];
+const JOB_TYPES = [
+  { label: "Private", value: "private" },
+  { label: "Government", value: "government" },
+  { label: "Business", value: "business" },
+];
 
 const ProfessionalDetailsStep = ({ data, setData, onNext, onBack }) => {
   const initial = data.professionalDetails || {};
@@ -33,12 +38,14 @@ const ProfessionalDetailsStep = ({ data, setData, onNext, onBack }) => {
   const [education, setEducation] = useState(initial.education || "");
   const [occupation, setOccupation] = useState(initial.occupation || "");
   const [income, setIncome] = useState(initial.income || "");
+   const [jobType, setJobType] = useState(initial.job_type || "");
   const [drawer, setDrawer] = useState(null);
 
   const getList = () => {
     if (drawer === "education") return EDUCATION;
     if (drawer === "occupation") return OCCUPATIONS;
     if (drawer === "income") return INCOME;
+     if (drawer === "job_type") return JOB_TYPES;
     return [];
   };
 
@@ -46,6 +53,7 @@ const ProfessionalDetailsStep = ({ data, setData, onNext, onBack }) => {
     if (drawer === "education") setEducation(item.value);
     if (drawer === "occupation") setOccupation(item.value);
     if (drawer === "income") setIncome(item.value);
+    if (drawer === "job_type") setJobType(item.value);
     setDrawer(null);
   };
 
@@ -56,6 +64,7 @@ const ProfessionalDetailsStep = ({ data, setData, onNext, onBack }) => {
         education,
         occupation,
         income,
+        job_type : jobType,
       },
     }));
     onNext();
@@ -87,7 +96,12 @@ const ProfessionalDetailsStep = ({ data, setData, onNext, onBack }) => {
           placeholder="Select occupation"
           onClick={() => setDrawer("occupation")}
         />
-
+<SelectField
+          label="Job type"
+          value={getLabel(JOB_TYPES, jobType)}
+          placeholder="Select job type"
+          onClick={() => setDrawer("job_type")}
+        />
         <SelectField
           label="Annual income"
           value={getLabel(INCOME, income)}
@@ -99,7 +113,7 @@ const ProfessionalDetailsStep = ({ data, setData, onNext, onBack }) => {
       <div className="px-4 py-4 border-t">
         <button
           onClick={handleNext}
-          disabled={!education || !occupation || !income}
+          disabled={!education || !occupation || !income || !jobType}
           className="w-full py-4 rounded-xl bg-primary text-white"
         >
           Next
@@ -110,7 +124,12 @@ const ProfessionalDetailsStep = ({ data, setData, onNext, onBack }) => {
         <div className="fixed inset-0 bg-black/40 z-50">
           <div className="absolute right-0 top-0 h-full w-[90%] bg-white">
             <div className="px-4 py-4 border-b flex justify-between">
-              <h3>Select {drawer}</h3>
+               <h3>
+                Select{" "}
+                {drawer === "job_type"
+                  ? "job type"
+                  : drawer}
+              </h3>
               <button onClick={() => setDrawer(null)}>✕</button>
             </div>
 
