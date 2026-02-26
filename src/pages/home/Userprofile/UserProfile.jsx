@@ -116,86 +116,173 @@ const UserProfile = () => {
     },
   });
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
-        setError("");
+  //   useEffect(() => {
+  //     const fetchProfile = async () => {
+  //       try {
+  //         setLoading(true);
+  //         setError("");
 
-        const token = localStorage.getItem("token");
-        if (!token) {
-          setError("Please login to view profile.");
-          return;
-        }
+  //         const token = localStorage.getItem("token");
+  //         if (!token) {
+  //           setError("Please login to view profile.");
+  //           return;
+  //         }
 
-        const res = await getUserProfile(token);
-        const resp = res.response || null;
-        setData(resp);
+  //         const res = await getUserProfile(token);
+  //         const resp = res.response || null;
+  //         setData(resp);
 
-        if (resp) {
-          const m = getMembershipFromProfile(resp);
-          setMembership(m);
+  //         if (resp) {
+  //           const m = getMembershipFromProfile(resp);
+  //           setMembership(m);
 
-          const ls = resp.lifestyle || {};
+  //           const ls = resp.lifestyle || {};
 
-          // Initialise editable form from response
-        setForm({
-  user: {
-    name: resp.user?.name || "",
-    address: resp.user?.address || "",
-  },
-  this_account_for: resp.this_account_for || "",
-  city: resp.city || "",
-  state: resp.state || "",
-  country: resp.country || "",
-  description: resp.description || "",
-  sub_caste: resp.sub_caste || "",
-  education: resp.education || "",
-  course_degree: resp.course_degree || "",
-  college: resp.college || "",
-  
-  passing_year: resp.passing_year ? String(resp.passing_year) : "",
-  occupation: resp.occupation || "",
-  annual_income: resp.annual_income || "",
-religion_name: resp.religion?.name || "",
-caste_name: resp.caste?.name || "",
+  //           // Initialise editable form from response
+  //         setForm({
+  //   user: {
+  //     name: resp.user?.name || "",
+  //     address: resp.user?.address || "",
+  //   },
+  //   this_account_for: resp.this_account_for || "",
+  //   city: resp.city || "",
+  //   state: resp.state || "",
+  //   country: resp.country || "",
+  //   description: resp.description || "",
+  //   sub_caste: resp.sub_caste || "",
+  //   education: resp.education || "",
+  //   course_degree: resp.course_degree || "",
+  //   college: resp.college || "",
 
-  family_status: resp.family_status || "",
-  family_worth: resp.family_worth || "",
-  mother_tongue: resp.mother_tongue || "",
-  physical_status: resp.physical_status || "",
-  children_count: resp.children_count === null ? "" : String(resp.children_count),
-  willing_inter_caste: resp.willing_inter_caste === null ? "" : resp.willing_inter_caste ? "Yes" : "No",
-  date_of_birth: resp.date_of_birth || "",
+  //   passing_year: resp.passing_year ? String(resp.passing_year) : "",
+  //   occupation: resp.occupation || "",
+  //   annual_income: resp.annual_income || "",
+  // religion_name: resp.religion?.name || "",
+  // caste_name: resp.caste?.name || "",
 
-  lifestyle: {
-    // 👇 These two lines fix the preferences bug
-    music_genre_ids: resp.lifestyle?.music_genres?.map(x => x.id) || [],
-    reading_preference_ids: resp.lifestyle?.reading_preferences?.map(x => x.id) || [],
+  //   family_status: resp.family_status || "",
+  //   family_worth: resp.family_worth || "",
+  //   mother_tongue: resp.mother_tongue || "",
+  //   physical_status: resp.physical_status || "",
+  //   children_count: resp.children_count === null ? "" : String(resp.children_count),
+  //   willing_inter_caste: resp.willing_inter_caste === null ? "" : resp.willing_inter_caste ? "Yes" : "No",
+  //   date_of_birth: resp.date_of_birth || "",
 
-   drinking: resp.lifestyle?.drinking === "regular" ? "regularly" : resp.lifestyle?.drinking || "",
-    fitness_activity: resp.lifestyle?.fitness_activity || "",
-    spoken_languages: resp.lifestyle?.spoken_languages || "",
-    eating_habits: resp.lifestyle?.eating_habits || "",
-    cooking: !!resp.lifestyle?.cooking,
-    time_of_birth: resp.lifestyle?.time_of_birth || "",
-    place_of_birth: resp.lifestyle?.place_of_birth || "",
-    nakshatra: resp.lifestyle?.nakshatra || "",
-    rashi: resp.lifestyle?.rashi || "",
-  },
-});
-        }
-      } catch (err) {
-        console.error("Failed to load user profile:", err);
-        setError("Could not load profile. Please try again.");
-      } finally {
-        setLoading(false);
+  //   lifestyle: {
+  //     // 👇 These two lines fix the preferences bug
+  //     music_genre_ids: resp.lifestyle?.music_genres?.map(x => x.id) || [],
+  //     reading_preference_ids: resp.lifestyle?.reading_preferences?.map(x => x.id) || [],
+
+  //    drinking: resp.lifestyle?.drinking === "regular" ? "regularly" : resp.lifestyle?.drinking || "",
+  //     fitness_activity: resp.lifestyle?.fitness_activity || "",
+  //     spoken_languages: resp.lifestyle?.spoken_languages || "",
+  //     eating_habits: resp.lifestyle?.eating_habits || "",
+  //     cooking: !!resp.lifestyle?.cooking,
+  //     time_of_birth: resp.lifestyle?.time_of_birth || "",
+  //     place_of_birth: resp.lifestyle?.place_of_birth || "",
+  //     nakshatra: resp.lifestyle?.nakshatra || "",
+  //     rashi: resp.lifestyle?.rashi || "",
+  //   },
+  // });
+  //         }
+  //       } catch (err) {
+  //         console.error("Failed to load user profile:", err);
+  //         setError("Could not load profile. Please try again.");
+  //       } finally {
+  //         setLoading(false);
+  //       }
+  //     };
+
+  //     fetchProfile();
+  //   }, []);
+
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Please login to view profile.");
+        return;
       }
-    };
 
+      const res = await getUserProfile(token);
+      const resp = res.response || null;
+      setData(resp);
+
+      if (resp) {
+        const m = getMembershipFromProfile(resp);
+        setMembership(m);
+
+        const ls = resp.lifestyle || {};
+
+        setForm({
+          user: {
+            name: resp.user?.name || "",
+            address: resp.user?.address || "",
+          },
+          this_account_for: resp.this_account_for || "",
+          city: resp.city || "",
+          state: resp.state || "",
+          country: resp.country || "",
+          description: resp.description || "",
+          sub_caste: resp.sub_caste || "",
+          education: resp.education || "",
+          course_degree: resp.course_degree || "",
+          college: resp.college || "",
+          passing_year: resp.passing_year ? String(resp.passing_year) : "",
+          occupation: resp.occupation || "",
+          annual_income: resp.annual_income || "",
+          religion_name: resp.religion?.name || "",
+          caste_name: resp.caste?.name || "",
+
+          family_status: resp.family_status || "",
+          family_worth: resp.family_worth || "",
+          mother_tongue: resp.mother_tongue || "",
+          physical_status: resp.physical_status || "",
+          children_count:
+            resp.children_count === null ? "" : String(resp.children_count),
+          willing_inter_caste:
+            resp.willing_inter_caste === null
+              ? ""
+              : resp.willing_inter_caste
+                ? "Yes"
+                : "No",
+          date_of_birth: resp.date_of_birth || "",
+
+          lifestyle: {
+            music_genre_ids:
+              resp.lifestyle?.music_genres?.map((x) => x.id) || [],
+            reading_preference_ids:
+              resp.lifestyle?.reading_preferences?.map((x) => x.id) || [],
+            drinking:
+              resp.lifestyle?.drinking === "regular"
+                ? "regularly"
+                : resp.lifestyle?.drinking || "",
+            fitness_activity: resp.lifestyle?.fitness_activity || "",
+            spoken_languages: resp.lifestyle?.spoken_languages || "",
+            eating_habits: resp.lifestyle?.eating_habits || "",
+            cooking: !!resp.lifestyle?.cooking,
+            time_of_birth: resp.lifestyle?.time_of_birth || "",
+            place_of_birth: resp.lifestyle?.place_of_birth || "",
+            nakshatra: resp.lifestyle?.nakshatra || "",
+            rashi: resp.lifestyle?.rashi || "",
+          },
+        });
+      }
+    } catch (err) {
+      console.error("Failed to load user profile:", err);
+      setError("Could not load profile. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Now your first useEffect becomes this, very simple:
+  useEffect(() => {
     fetchProfile();
   }, []);
-
   const profile = data || {};
   const user = profile.user || {};
   const lifestyle = profile.lifestyle || null;
@@ -251,50 +338,56 @@ caste_name: resp.caste?.name || "",
         return;
       }
 
-    const payload = {
-  user: {
-    name: form.user.name,
-    address: form.user.address || null,
-  },
-  this_account_for: form.this_account_for || null,
-  city: form.city || null,
-  state: form.state || null,
-  country: form.country || null,
-  description: form.description || null,
-  sub_caste: form.sub_caste || null,
-  education: form.education || null,
-  college: form.college || null,
-  course_degree: form.course_degree || null,
-  passing_year: form.passing_year || null,
-  occupation: form.occupation || null,
-  annual_income: form.annual_income || null,
+      const payload = {
+        user: {
+          name: form.user.name,
+          address: form.user.address || null,
+        },
+        this_account_for: form.this_account_for || null,
+        city: form.city || null,
+        state: form.state || null,
+        country: form.country || null,
+        description: form.description || null,
+        sub_caste: form.sub_caste || null,
+        education: form.education || null,
+        college: form.college || null,
+        course_degree: form.course_degree || null,
+        passing_year: form.passing_year || null,
+        occupation: form.occupation || null,
+        annual_income: form.annual_income || null,
 
-  family_status: form.family_status || null,
-  family_worth: form.family_worth || null,
-  mother_tongue: form.mother_tongue || null,
-  physical_status: form.physical_status || null,
+        family_status: form.family_status || null,
+        family_worth: form.family_worth || null,
+        mother_tongue: form.mother_tongue || null,
+        physical_status: form.physical_status || null,
 
-  children_count: !form.children_count ? null : Number(form.children_count),
+        children_count: !form.children_count
+          ? null
+          : Number(form.children_count),
 
-  // 👇 Fixed, will never crash even if null
-  willing_inter_caste: !form.willing_inter_caste ? null : form.willing_inter_caste.toLowerCase() === "yes",
+        // 👇 Fixed, will never crash even if null
+        willing_inter_caste: !form.willing_inter_caste
+          ? null
+          : form.willing_inter_caste.toLowerCase() === "yes",
 
-  date_of_birth: form.date_of_birth || null,
+        date_of_birth: form.date_of_birth || null,
 
-  lifestyle: {
-    music_genre_ids: form.lifestyle.music_genre_ids,
-    reading_preference_ids: form.lifestyle.reading_preference_ids,
-    drinking: form.lifestyle.drinking || null,
-    fitness_activity: form.lifestyle.fitness_activity || null,
-    spoken_languages: form.lifestyle.spoken_languages || null,
-    eating_habits: form.lifestyle.eating_habits || null,
-    cooking: form.lifestyle.cooking,
-    time_of_birth: form.lifestyle.time_of_birth || null,
-    place_of_birth: form.lifestyle.place_of_birth || null,
-    nakshatra: form.lifestyle.nakshatra || null,
-    rashi: form.lifestyle.rashi || null,
-  },
-};
+        lifestyle: {
+          music_genre_ids: form.lifestyle.music_genre_ids,
+          reading_preference_ids: form.lifestyle.reading_preference_ids,
+
+          // 👇 All of these must send empty string, NOT null
+          drinking: form.lifestyle.drinking || "",
+          fitness_activity: form.lifestyle.fitness_activity || "",
+          spoken_languages: form.lifestyle.spoken_languages || "",
+          eating_habits: form.lifestyle.eating_habits || "",
+          cooking: form.lifestyle.cooking,
+          time_of_birth: form.lifestyle.time_of_birth || "",
+          place_of_birth: form.lifestyle.place_of_birth || "",
+          nakshatra: form.lifestyle.nakshatra || "",
+          rashi: form.lifestyle.rashi || "",
+        },
+      };
 
       const res = await updateUserProfile(payload, token);
       console.log("✅ Profile updated:", res);
@@ -305,8 +398,8 @@ caste_name: resp.caste?.name || "",
       setEditing(false);
     } catch (err) {
       console.error("❌ Failed to update profile:", err);
-       if (err.response) console.error("Backend response:", err.response.data);
-  if (err.message) console.error("Error message:", err.message);
+      if (err.response) console.error("Backend response:", err.response.data);
+      if (err.message) console.error("Error message:", err.message);
       setSaveError("Could not update profile. Please try again.");
     } finally {
       setSaving(false);
@@ -472,12 +565,18 @@ caste_name: resp.caste?.name || "",
               <button
                 type="button"
                 onClick={() => {
-  setEditing(e => {
-    if (e) fetchProfile() // reset form when cancelling
-    return !e
-  })
-}}
+                  setEditing((e) => {
+                    if (e) 
+                    {
+ fetchProfile();
+ setSaveError("");
+ setSaveSuccess("");
+                    }
+                     
 
+                    return !e;
+                  });
+                }}
                 className="text-[11px] font-semibold text-primary"
               >
                 {editing ? "Cancel" : "Edit"}
@@ -573,7 +672,7 @@ caste_name: resp.caste?.name || "",
               </section>
 
               {/* PROFILE SUMMARY – ID + LOCATION ONLY (no duplicated fields) */}
-             <section className="rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-3 bg-gradient-to-br from-blue-100 to-white">
+              <section className="rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-3 bg-gradient-to-br from-blue-100 to-white">
                 <p className="text-[10px] text-red-500 font-semibold">
                   Profile ID:{" "}
                   <span className="text-gray-950">
@@ -694,7 +793,7 @@ caste_name: resp.caste?.name || "",
               </section>
 
               {/* EDUCATION & CAREER (EDITABLE, no duplicates in Basic) */}
-             <section className="rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-3 bg-gradient-to-br from-yellow-50 to-white">
+              <section className="rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-3 bg-gradient-to-br from-yellow-50 to-white">
                 <p className="text-sm font-semibold text-navy mb-1">
                   Education & Career
                 </p>
@@ -712,7 +811,7 @@ caste_name: resp.caste?.name || "",
                       editing
                         ? form.course_degree
                         : lifestyle?.course_degree || ""
-                        // : profile.course_degree || ""
+                      // : profile.course_degree || ""
                     }
                     onChange={(v) =>
                       editing && handleChange("course_degree", v)
@@ -721,9 +820,8 @@ caste_name: resp.caste?.name || "",
                   />
                   <LabeledInput
                     label="College"
-                    value={editing ? form.college 
-                      : lifestyle?.college || ""}
-                      // : profile.college || ""}
+                    value={editing ? form.college : lifestyle?.college || ""}
+                    // : profile.college || ""}
                     onChange={(v) => editing && handleChange("college", v)}
                     disabled={!editing}
                   />
@@ -733,7 +831,7 @@ caste_name: resp.caste?.name || "",
                       editing
                         ? form.passing_year
                         : String(lifestyle?.passing_year || "")
-                        // : String(profile.passing_year || "")
+                      // : String(profile.passing_year || "")
                     }
                     onChange={(v) => editing && handleChange("passing_year", v)}
                     disabled={!editing}
@@ -758,7 +856,7 @@ caste_name: resp.caste?.name || "",
               </section>
 
               {/* LIFESTYLE & INTERESTS (EDITABLE) */}
-             <section className="rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-2 bg-gradient-to-br from-pink-50 to-white">
+              <section className="rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-2 bg-gradient-to-br from-pink-50 to-white">
                 <p className="text-sm font-semibold text-navy mb-1">
                   Lifestyle & Interests
                 </p>
@@ -1004,7 +1102,7 @@ caste_name: resp.caste?.name || "",
               </section>
 
               {/* BIRTH & HOROSCOPE (EDITABLE) */}
-               <section className="rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-2 bg-gradient-to-br from-red-100 to-white">
+              <section className="rounded-3xl shadow-sm border border-gray-100 p-4 text-[11px] space-y-2 bg-gradient-to-br from-red-100 to-white">
                 <p className="text-sm font-semibold text-navy mb-1">
                   Birth & Horoscope
                 </p>
