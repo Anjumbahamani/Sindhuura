@@ -46,7 +46,7 @@ const READING_OPTIONS = [
   { id: 3, label: "Biographies" },
 ];
 
-const DRINKING_OPTIONS = ["never", "occasionally", "regular"];
+const DRINKING_OPTIONS = ["never", "occasionally", "regularly"];
 
 const UserProfile = () => {
   const navigate = useNavigate();
@@ -83,6 +83,8 @@ const UserProfile = () => {
     city: "",
     state: "",
     country: "",
+    religion_name: "",
+    caste_name: "",
     description: "",
     education: "",
     course_degree: "",
@@ -137,61 +139,51 @@ const UserProfile = () => {
           const ls = resp.lifestyle || {};
 
           // Initialise editable form from response
-          setForm({
-            user: {
-              name: resp.user?.name || "",
-              address: resp.user?.address || "",
-            },
-            this_account_for: resp.this_account_for || "",
-            city: resp.city || "",
-            state: resp.state || "",
-            country: resp.country || "",
-            description: resp.description || "",
-            education: resp.education || "",
-            religion_name: resp.religion?.name || "", // Fix: extract from object
-            caste_name: resp.caste?.name || "", // Fix: extract from object
-            sub_caste: resp.sub_caste || "",
-            course_degree: resp.course_degree || "",
-            college: resp.college || "",
-            passing_year: resp.passing_year || "",
-            occupation: resp.occupation || "",
-            annual_income: resp.annual_income || "",
+        setForm({
+  user: {
+    name: resp.user?.name || "",
+    address: resp.user?.address || "",
+  },
+  this_account_for: resp.this_account_for || "",
+  city: resp.city || "",
+  state: resp.state || "",
+  country: resp.country || "",
+  description: resp.description || "",
+  sub_caste: resp.sub_caste || "",
+  education: resp.education || "",
+  course_degree: resp.course_degree || "",
+  college: resp.college || "",
+  
+  passing_year: resp.passing_year ? String(resp.passing_year) : "",
+  occupation: resp.occupation || "",
+  annual_income: resp.annual_income || "",
+religion_name: resp.religion?.name || "",
+caste_name: resp.caste?.name || "",
 
-            family_status: resp.family_status || "",
-            family_worth: resp.family_worth || "",
-            mother_tongue: resp.mother_tongue || "",
-            physical_status: resp.physical_status || "",
-            children_count:
-              resp.children_count === null || resp.children_count === undefined
-                ? ""
-                : String(resp.children_count),
-            willing_inter_caste:
-              resp.willing_inter_caste === null ||
-              resp.willing_inter_caste === undefined
-                ? ""
-                : resp.willing_inter_caste
-                  ? "Yes"
-                  : "No",
-            date_of_birth: resp.date_of_birth || "",
+  family_status: resp.family_status || "",
+  family_worth: resp.family_worth || "",
+  mother_tongue: resp.mother_tongue || "",
+  physical_status: resp.physical_status || "",
+  children_count: resp.children_count === null ? "" : String(resp.children_count),
+  willing_inter_caste: resp.willing_inter_caste === null ? "" : resp.willing_inter_caste ? "Yes" : "No",
+  date_of_birth: resp.date_of_birth || "",
 
-            lifestyle: {
-              // if backend later sends *_ids, this will prefill
-              music_genre_ids: ls.music_genre_ids || [],
-              reading_preference_ids: ls.reading_preference_ids || [],
-              drinking: ls.drinking || "",
-              fitness_activity: ls.fitness_activity || "",
-              spoken_languages: ls.spoken_languages || "",
-              eating_habits: ls.eating_habits || "",
-              cooking: !!ls.cooking,
-              time_of_birth: ls.time_of_birth || "",
-              place_of_birth: ls.place_of_birth || "",
-              nakshatra: ls.nakshatra || "",
-              rashi: ls.rashi || "",
-              college: ls.college || "",
-              course_degree: ls.course_degree || "",
-              passing_year: ls.passing_year ? String(ls.passing_year) : "",
-            },
-          });
+  lifestyle: {
+    // 👇 These two lines fix the preferences bug
+    music_genre_ids: resp.lifestyle?.music_genres?.map(x => x.id) || [],
+    reading_preference_ids: resp.lifestyle?.reading_preferences?.map(x => x.id) || [],
+
+   drinking: resp.lifestyle?.drinking === "regular" ? "regularly" : resp.lifestyle?.drinking || "",
+    fitness_activity: resp.lifestyle?.fitness_activity || "",
+    spoken_languages: resp.lifestyle?.spoken_languages || "",
+    eating_habits: resp.lifestyle?.eating_habits || "",
+    cooking: !!resp.lifestyle?.cooking,
+    time_of_birth: resp.lifestyle?.time_of_birth || "",
+    place_of_birth: resp.lifestyle?.place_of_birth || "",
+    nakshatra: resp.lifestyle?.nakshatra || "",
+    rashi: resp.lifestyle?.rashi || "",
+  },
+});
         }
       } catch (err) {
         console.error("Failed to load user profile:", err);
@@ -259,59 +251,50 @@ const UserProfile = () => {
         return;
       }
 
-      const payload = {
-        user: {
-          name: form.user.name,
-          address: form.user.address || null,
-        },
-        this_account_for: form.this_account_for || null,
+    const payload = {
+  user: {
+    name: form.user.name,
+    address: form.user.address || null,
+  },
+  this_account_for: form.this_account_for || null,
+  city: form.city || null,
+  state: form.state || null,
+  country: form.country || null,
+  description: form.description || null,
+  sub_caste: form.sub_caste || null,
+  education: form.education || null,
+  college: form.college || null,
+  course_degree: form.course_degree || null,
+  passing_year: form.passing_year || null,
+  occupation: form.occupation || null,
+  annual_income: form.annual_income || null,
 
-        city: form.city || null,
-        state: form.state || null,
-        country: form.country || null,
-        description: form.description || null,
-        religion_name: form.religion_name || null,
-        sub_caste: form.sub_caste || null,
-        education: form.education || null,
-        college: form.college || null,
-        course_degree: form.course_degree || null,
-        passing_year: form.passing_year || null,
-        occupation: form.occupation || null,
-        annual_income: form.annual_income || null,
+  family_status: form.family_status || null,
+  family_worth: form.family_worth || null,
+  mother_tongue: form.mother_tongue || null,
+  physical_status: form.physical_status || null,
 
-        family_status: form.family_status || null,
-        family_worth: form.family_worth || null,
-        mother_tongue: form.mother_tongue || null,
-        physical_status: form.physical_status || null,
+  children_count: !form.children_count ? null : Number(form.children_count),
 
-        children_count:
-          form.children_count === ""
-            ? null
-            : Number.isNaN(Number(form.children_count))
-              ? null
-              : Number(form.children_count),
+  // 👇 Fixed, will never crash even if null
+  willing_inter_caste: !form.willing_inter_caste ? null : form.willing_inter_caste.toLowerCase() === "yes",
 
-        willing_inter_caste:
-          form.willing_inter_caste === ""
-            ? null
-            : form.willing_inter_caste.toLowerCase() === "yes",
+  date_of_birth: form.date_of_birth || null,
 
-        date_of_birth: form.date_of_birth || null,
-
-        lifestyle: {
-          music_genre_ids: form.lifestyle.music_genre_ids,
-          reading_preference_ids: form.lifestyle.reading_preference_ids,
-          drinking: form.lifestyle.drinking || null,
-          fitness_activity: form.lifestyle.fitness_activity || null,
-          spoken_languages: form.lifestyle.spoken_languages || null,
-          eating_habits: form.lifestyle.eating_habits || null,
-          cooking: form.lifestyle.cooking,
-          time_of_birth: form.lifestyle.time_of_birth || null,
-          place_of_birth: form.lifestyle.place_of_birth || null,
-          nakshatra: form.lifestyle.nakshatra || null,
-          rashi: form.lifestyle.rashi || null,
-        },
-      };
+  lifestyle: {
+    music_genre_ids: form.lifestyle.music_genre_ids,
+    reading_preference_ids: form.lifestyle.reading_preference_ids,
+    drinking: form.lifestyle.drinking || null,
+    fitness_activity: form.lifestyle.fitness_activity || null,
+    spoken_languages: form.lifestyle.spoken_languages || null,
+    eating_habits: form.lifestyle.eating_habits || null,
+    cooking: form.lifestyle.cooking,
+    time_of_birth: form.lifestyle.time_of_birth || null,
+    place_of_birth: form.lifestyle.place_of_birth || null,
+    nakshatra: form.lifestyle.nakshatra || null,
+    rashi: form.lifestyle.rashi || null,
+  },
+};
 
       const res = await updateUserProfile(payload, token);
       console.log("✅ Profile updated:", res);
@@ -322,6 +305,8 @@ const UserProfile = () => {
       setEditing(false);
     } catch (err) {
       console.error("❌ Failed to update profile:", err);
+       if (err.response) console.error("Backend response:", err.response.data);
+  if (err.message) console.error("Error message:", err.message);
       setSaveError("Could not update profile. Please try again.");
     } finally {
       setSaving(false);
@@ -486,7 +471,13 @@ const UserProfile = () => {
             {!loading && !error && data && (
               <button
                 type="button"
-                onClick={() => setEditing((e) => !e)}
+                onClick={() => {
+  setEditing(e => {
+    if (e) fetchProfile() // reset form when cancelling
+    return !e
+  })
+}}
+
                 className="text-[11px] font-semibold text-primary"
               >
                 {editing ? "Cancel" : "Edit"}
@@ -721,6 +712,7 @@ const UserProfile = () => {
                       editing
                         ? form.course_degree
                         : lifestyle?.course_degree || ""
+                        // : profile.course_degree || ""
                     }
                     onChange={(v) =>
                       editing && handleChange("course_degree", v)
@@ -729,7 +721,9 @@ const UserProfile = () => {
                   />
                   <LabeledInput
                     label="College"
-                    value={editing ? form.college : lifestyle?.college || ""}
+                    value={editing ? form.college 
+                      : lifestyle?.college || ""}
+                      // : profile.college || ""}
                     onChange={(v) => editing && handleChange("college", v)}
                     disabled={!editing}
                   />
@@ -739,6 +733,7 @@ const UserProfile = () => {
                       editing
                         ? form.passing_year
                         : String(lifestyle?.passing_year || "")
+                        // : String(profile.passing_year || "")
                     }
                     onChange={(v) => editing && handleChange("passing_year", v)}
                     disabled={!editing}
@@ -1239,7 +1234,7 @@ const UserProfile = () => {
 
                 <div>
                   <p className="text-[11px] font-semibold text-gray-700 mb-0.5">
-                    Upload Images (max 3)
+                    Upload Images
                   </p>
                   <input
                     type="file"

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../../components/BottomNav";
 import { FiArrowLeft, FiCheck, FiX, FiSearch, FiInbox } from "react-icons/fi";
-import { acceptRequest, rejectRequest, getNotifications } from "../../services/match.service";
+import { getNotifications } from "../../services/match.service";
 
 const Notifications = () => {
   const navigate = useNavigate();
@@ -18,8 +18,12 @@ const Notifications = () => {
       setLoading(true);
       const token = localStorage.getItem("token");
       const res = await getNotifications(token);
-      
-      const dataArray = Array.isArray(res.response) ? res.response : [];
+      console.log("getNotifications response:", res);
+     const dataArray = Array.isArray(res.response?.results)
+  ? res.response.results
+  : [];
+
+setNotifications(dataArray);
       setNotifications(dataArray);
     } catch (err) {
       console.error("Fetch error:", err);
@@ -52,10 +56,25 @@ const Notifications = () => {
     <div className="min-h-screen bg-white pb-20">
       <div className="max-w-md mx-auto min-h-screen bg-white pb-20">
         <div className="bg-white shadow-sm pb-2">
-          <div className="px-4 pt-3">
-            <h1 className="text-lg font-semibold text-navy">Notifications</h1>
-            <p className="text-[11px] text-gray-500">All your updates in one place</p>
-          </div>
+  <div className="px-4 pt-3 flex items-center gap-3">
+    
+    {/* Back Button */}
+    <button
+      onClick={() => navigate(-1)}
+      className="p-2 rounded-full hover:bg-gray-100 transition"
+    >
+      <FiArrowLeft className="w-5 h-5 text-navy" />
+    </button>
+
+    {/* Title */}
+    <div>
+      <h1 className="text-lg font-semibold text-navy">Notifications</h1>
+      <p className="text-[11px] text-gray-500">
+        All your updates in one place
+      </p>
+    </div>
+    
+  </div>
 
           <div className="px-4 mt-3 mb-1">
             <div className="flex bg-[#F7F7F7] rounded-full p-1 gap-1">
@@ -122,65 +141,40 @@ const Notifications = () => {
   );
 };
 
-const NotificationCard = ({ item, refresh }) => {
+const NotificationCard = ({ item }) => {
   const navigate = useNavigate();
-  const [submitting, setSubmitting] = useState(false);
-  const token = localStorage.getItem("token");
-
-  const handleAction = async (e, type) => {
-    e.stopPropagation();
-    try {
-      setSubmitting(true);
-      if (type === 'accept') await acceptRequest(item.match_request, token);
-      else await rejectRequest(item.match_request, token);
-      refresh();
-    } catch (err) {
-      alert("Action failed. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   return (
     <div
       onClick={() => {
-        if (item.notification_type === "match_request") navigate(`/matches/${item.sender_id}`);
+        if (item.notification_type === "match_request") {
+          navigate(`/matches/${item.sender_id}`);
+        }
       }}
       className={`cursor-pointer rounded-2xl shadow-sm px-3 py-3 flex gap-3 items-start transition border ${
-        !item.is_read ? "bg-[#FFF7E9] border-orange-100" : "bg-white border-gray-50"
+        !item.is_read
+          ? "bg-[#FFF7E9] border-orange-100"
+          : "bg-white border-gray-50"
       }`}
     >
-      {/* Sender Avatar Placeholder */}
+      {/* Avatar */}
       <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-primary/10 flex items-center justify-center text-primary font-bold">
         {item.sender_name?.[0] || "U"}
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start">
-          <p className="text-sm font-semibold text-navy truncate">{item.title}</p>
-          <span className="text-[9px] text-gray-400 whitespace-nowrap ml-2">{item.created_at}</span>
+          <p className="text-sm font-semibold text-navy truncate">
+            {item.title}
+          </p>
+          <span className="text-[9px] text-gray-400 whitespace-nowrap ml-2">
+            {item.created_at}
+          </span>
         </div>
-        
-        <p className="text-[11px] text-gray-600 mt-0.5 leading-snug">{item.message}</p>
 
-        {item.notification_type === "match_request" && !item.is_read && (
-          <div className="mt-3 flex gap-2" onClick={e => e.stopPropagation()}>
-            <button
-              onClick={(e) => handleAction(e, 'reject')}
-              disabled={submitting}
-              className="flex-1 py-1.5 rounded-lg border border-gray-200 text-[10px] font-bold text-gray-600 hover:bg-gray-50"
-            >
-              Decline
-            </button>
-            <button
-              onClick={(e) => handleAction(e, 'accept')}
-              disabled={submitting}
-              className="flex-1 py-1.5 rounded-lg bg-primary text-white text-[10px] font-bold shadow-sm"
-            >
-              Accept
-            </button>
-          </div>
-        )}
+        <p className="text-[11px] text-gray-600 mt-0.5 leading-snug">
+          {item.message}
+        </p>
       </div>
     </div>
   );
