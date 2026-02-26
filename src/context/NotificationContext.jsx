@@ -1,10 +1,5 @@
 // src/context/NotificationContext.jsx
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-} from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 const NotificationContext = createContext(null);
@@ -19,16 +14,34 @@ const NotificationBanner = ({ notification, onClose }) => {
 
   const { title, body, data } = notification;
 
-  const handleClick = () => {
+  // const handleClick = () => {
+  //   if (data?.type === "chat" && data.room_id) {
+  //     navigate(`/messages/${data.room_id}`);
+  //   } else if (data?.type === "match_request") {
+  //     // If backend provides a deep link, we can use that later.
+  //     // For now, go to received requests.
+  //     navigate("/requests/received"); // adjust route to your real page
+  //   } else if (title === "New Match Request") {
+  //     // Fallback if backend doesn't send data.type
+  //     navigate("/requests/received");
+  //   }
+  //   onClose();
+  // };
+// In NotificationBanner.jsx
+const handleClick = () => {
   if (data?.type === "chat" && data.room_id) {
-    navigate(`/messages/${data.room_id}`);
+    // For Median native app, use their deep linking
+    if (window.Median && window.Median.openLink) {
+      window.Median.openLink(`/messages/${data.room_id}`);
+    } else {
+      navigate(`/messages/${data.room_id}`);
+    }
   } else if (data?.type === "match_request") {
-    // If backend provides a deep link, we can use that later.
-    // For now, go to received requests.
-    navigate("/requests/received"); // adjust route to your real page
-  } else if (title === "New Match Request") {
-    // Fallback if backend doesn't send data.type
-    navigate("/requests/received");
+    if (window.Median && window.Median.openLink) {
+      window.Median.openLink("/requests/received");
+    } else {
+      navigate("/requests/received");
+    }
   }
   onClose();
 };
@@ -51,9 +64,7 @@ const NotificationBanner = ({ notification, onClose }) => {
           <p className="text-[13px] font-semibold text-navy truncate">
             {title || "Notification"}
           </p>
-          <p className="text-[11px] text-gray-700 line-clamp-2">
-            {body || ""}
-          </p>
+          <p className="text-[11px] text-gray-700 line-clamp-2">{body || ""}</p>
         </div>
 
         <button
@@ -76,7 +87,7 @@ export const NotificationProvider = ({ children }) => {
   const [notification, setNotification] = useState(null);
 
   const showNotification = useCallback((notif) => {
-    console.log("SHOW NOTIFICATION:", notif);   // <--- debug
+    console.log("SHOW NOTIFICATION:", notif); // <--- debug
     setNotification(notif);
   }, []);
 

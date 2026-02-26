@@ -377,10 +377,16 @@ const UserProfile = () => {
           reading_preference_ids: form.lifestyle.reading_preference_ids,
 
           // 👇 All of these must send empty string, NOT null
-          drinking: form.lifestyle.drinking || "",
+          drinking: form.lifestyle.drinking || null,
+          eating_habits: form.lifestyle.eating_habits || null,
+
+          // 👇 Time field: send NULL when empty
+          time_of_birth: form.lifestyle.time_of_birth || null,
+
+          // 👇 Normal text fields: send empty string when empty
           fitness_activity: form.lifestyle.fitness_activity || "",
           spoken_languages: form.lifestyle.spoken_languages || "",
-          eating_habits: form.lifestyle.eating_habits || "",
+          // eating_habits: form.lifestyle.eating_habits || "",
           cooking: form.lifestyle.cooking,
           time_of_birth: form.lifestyle.time_of_birth || "",
           place_of_birth: form.lifestyle.place_of_birth || "",
@@ -566,13 +572,11 @@ const UserProfile = () => {
                 type="button"
                 onClick={() => {
                   setEditing((e) => {
-                    if (e) 
-                    {
- fetchProfile();
- setSaveError("");
- setSaveSuccess("");
+                    if (e) {
+                      fetchProfile();
+                      setSaveError("");
+                      setSaveSuccess("");
                     }
-                     
 
                     return !e;
                   });
