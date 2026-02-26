@@ -326,91 +326,95 @@ const UserProfile = () => {
     });
   };
 
-  const handleSave = async () => {
-    try {
-      setSaving(true);
-      setSaveError("");
-      setSaveSuccess("");
+ const handleSave = async () => {
+  try {
+    setSaving(true);
+    setSaveError("");
+    setSaveSuccess("");
 
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setSaveError("Please login to update profile.");
-        return;
-      }
-
-      const payload = {
-        user: {
-          name: form.user.name,
-          address: form.user.address || null,
-        },
-        this_account_for: form.this_account_for || null,
-        city: form.city || null,
-        state: form.state || null,
-        country: form.country || null,
-        description: form.description || null,
-        sub_caste: form.sub_caste || null,
-        education: form.education || null,
-        college: form.college || null,
-        course_degree: form.course_degree || null,
-        passing_year: form.passing_year || null,
-        occupation: form.occupation || null,
-        annual_income: form.annual_income || null,
-
-        family_status: form.family_status || null,
-        family_worth: form.family_worth || null,
-        mother_tongue: form.mother_tongue || null,
-        physical_status: form.physical_status || null,
-
-        children_count: !form.children_count
-          ? null
-          : Number(form.children_count),
-
-        // 👇 Fixed, will never crash even if null
-        willing_inter_caste: !form.willing_inter_caste
-          ? null
-          : form.willing_inter_caste.toLowerCase() === "yes",
-
-        date_of_birth: form.date_of_birth || null,
-
-        lifestyle: {
-          music_genre_ids: form.lifestyle.music_genre_ids,
-          reading_preference_ids: form.lifestyle.reading_preference_ids,
-
-          // 👇 All of these must send empty string, NOT null
-          drinking: form.lifestyle.drinking || null,
-          eating_habits: form.lifestyle.eating_habits || null,
-
-          // 👇 Time field: send NULL when empty
-          time_of_birth: form.lifestyle.time_of_birth || null,
-
-          // 👇 Normal text fields: send empty string when empty
-          fitness_activity: form.lifestyle.fitness_activity || "",
-          spoken_languages: form.lifestyle.spoken_languages || "",
-          // eating_habits: form.lifestyle.eating_habits || "",
-          cooking: form.lifestyle.cooking,
-          time_of_birth: form.lifestyle.time_of_birth || "",
-          place_of_birth: form.lifestyle.place_of_birth || "",
-          nakshatra: form.lifestyle.nakshatra || "",
-          rashi: form.lifestyle.rashi || "",
-        },
-      };
-
-      const res = await updateUserProfile(payload, token);
-      console.log("✅ Profile updated:", res);
-      setSaveSuccess("Profile updated successfully.");
-
-      if (res.response) setData(res.response);
-
-      setEditing(false);
-    } catch (err) {
-      console.error("❌ Failed to update profile:", err);
-      if (err.response) console.error("Backend response:", err.response.data);
-      if (err.message) console.error("Error message:", err.message);
-      setSaveError("Could not update profile. Please try again.");
-    } finally {
-      setSaving(false);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setSaveError("Please login to update profile.");
+      return;
     }
-  };
+
+    const payload = {
+      user: {
+        name: form.user.name,
+        address: form.user.address || null,
+      },
+      this_account_for: form.this_account_for || null,
+      city: form.city || null,
+      state: form.state || null,
+      country: form.country || null,
+      description: form.description || null,
+      sub_caste: form.sub_caste || null,
+      education: form.education || null,
+      college: form.college || null,
+      course_degree: form.course_degree || null,
+      passing_year: form.passing_year || null,
+      occupation: form.occupation || null,
+      annual_income: form.annual_income || null,
+
+      family_status: form.family_status || null,
+      family_worth: form.family_worth || null,
+      mother_tongue: form.mother_tongue || null,
+      physical_status: form.physical_status || null,
+
+      children_count: !form.children_count ? null : Number(form.children_count),
+      willing_inter_caste: !form.willing_inter_caste ? null : form.willing_inter_caste.toLowerCase() === "yes",
+      date_of_birth: form.date_of_birth || null,
+
+      lifestyle: {
+  music_genre_ids: form.lifestyle.music_genre_ids,
+  reading_preference_ids: form.lifestyle.reading_preference_ids,
+
+  // 👇 ALL CHOICE FIELDS: send undefined when empty, never send them unless explicitly set by the user
+  drinking: form.lifestyle.drinking ? form.lifestyle.drinking : undefined,
+  eating_habits: form.lifestyle.eating_habits ? form.lifestyle.eating_habits : undefined,
+  smoking: form.lifestyle.smoking ? form.lifestyle.smoking : undefined,
+
+  // 👇 Time field: send null when empty
+  time_of_birth: form.lifestyle.time_of_birth || null,
+
+  // 👇 Normal text fields: send empty string when empty
+  fitness_activity: form.lifestyle.fitness_activity || "",
+  spoken_languages: form.lifestyle.spoken_languages || "",
+  cooking: form.lifestyle.cooking,
+  place_of_birth: form.lifestyle.place_of_birth || "",
+  nakshatra: form.lifestyle.nakshatra || "",
+  rashi: form.lifestyle.rashi || "",
+},
+    };
+
+    // 🧙 Magic step: remove all undefined fields so they are NEVER sent to the backend
+    // This fixes 100% of the corrupted existing user data issues
+    Object.keys(payload.lifestyle).forEach(key => {
+      if (payload.lifestyle[key] === undefined) {
+        delete payload.lifestyle[key];
+      }
+    });
+
+    // Hard guarantee these forbidden fields are never sent
+    delete payload.religion_name;
+    delete payload.caste_name;
+
+    const res = await updateUserProfile(payload, token);
+    console.log("✅ Profile updated:", res);
+    setSaveSuccess("Profile updated successfully.");
+
+    if (res.response) setData(res.response);
+
+    setEditing(false);
+  } catch (err) {
+    console.error("❌ Failed to update profile:", err);
+    if (err.response) console.error("Backend response:", err.response.data);
+    if (err.message) console.error("Error message:", err.message);
+    setSaveError("Could not update profile. Please try again.");
+  } finally {
+    setSaving(false);
+  }
+};
 
   useEffect(() => {
     const loadAllImages = async () => {
