@@ -71,7 +71,7 @@ const PersonalDetailsStep = ({ data, setData, onNext, onBack }) => {
 
     setData((prev) => ({
       ...prev,
-      email,
+      // email,
       password,
       confirm_password: confirmPassword,
       personalDetails: local,
@@ -102,6 +102,7 @@ const PersonalDetailsStep = ({ data, setData, onNext, onBack }) => {
           <input
             type="email"
             value={email}
+                readOnly
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter email"
             className="w-full px-4 py-3 border rounded-xl
