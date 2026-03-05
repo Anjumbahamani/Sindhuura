@@ -23,6 +23,7 @@ import ForgotPassword from "../pages/auth/ForgotPass/ForgotPassword";
 import ResetPassword from "../pages/auth/ForgotPass/ResetPassword";
 import DeleteAccount from "../pages/home/Userprofile/DeleteAccount";
 import RootRedirect from "./RootRedirect";
+import PrivacyPolicy from "../pages/home/Term&AbtTeam/PrivacyPolicy";
 
 const AppRoutes = () => {
   return (
@@ -45,6 +46,7 @@ const AppRoutes = () => {
 
       <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
       <Route path="/about-team" element={<AboutTeam />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/interests/:userId" element={<InterestDetails />} />
       <Route path="/messages/:roomId" element={<ChatRoom />} />
       <Route path="/notifications" element={<Notifications />} />

@@ -707,6 +707,16 @@ if (orderRes?.status === false) {
                     >
                       About Our Team
                     </li> */}
+                    <li
+                      onClick={() => {
+                        setShowMenu(false);
+                        navigate("/privacy-policy");
+                      }}
+                      className="px-4 py-2 hover:bg-[#FFF5EB] cursor-pointer"
+                    >
+                      Privacy Policy
+                    </li>
+                    
                   </ul>
                 </div>
               )}
