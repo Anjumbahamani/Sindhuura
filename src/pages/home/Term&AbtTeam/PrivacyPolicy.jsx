@@ -1,9 +1,22 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import { FiArrowLeft } from "react-icons/fi";
 
 const PrivacyPolicy = () => {
+    const navigate = useNavigate();
   return (
     <div className="max-w-4xl mx-auto px-6 py-10 text-gray-800">
-      <h1 className="text-3xl font-bold mb-4">Privacy Policy for Sindhuura</h1>
+          <div className="flex items-center mb-6 sticky top-0 bg-white pt-1 z-10">
+          <button
+            onClick={() => navigate(-1)}
+            className="w-9 h-9 rounded-full flex items-center justify-center bg-[#FFF7E9] mr-3 shrink-0"
+          >
+            <FiArrowLeft className="text-navy w-4 h-4" />
+          </button>
+          <h1 className="text-lg font-semibold text-navy">
+            Privacy Policy for Sindhuura          </h1>
+        </div>
+      {/* <h1 className="text-3xl font-bold mb-4">Privacy Policy for Sindhuura</h1> */}
 
       {/* <p className="mb-4">
         <strong>Effective Date:</strong> [Add Date]

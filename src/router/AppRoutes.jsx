@@ -24,6 +24,7 @@ import ResetPassword from "../pages/auth/ForgotPass/ResetPassword";
 import DeleteAccount from "../pages/home/Userprofile/DeleteAccount";
 import RootRedirect from "./RootRedirect";
 import PrivacyPolicy from "../pages/home/Term&AbtTeam/PrivacyPolicy";
+import ChildSafetyPolicy from "../pages/home/Term&AbtTeam/Children-policy";
 
 const AppRoutes = () => {
   return (
@@ -47,6 +48,7 @@ const AppRoutes = () => {
       <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
       <Route path="/about-team" element={<AboutTeam />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/children-policy" element={<ChildSafetyPolicy />} />
       <Route path="/interests/:userId" element={<InterestDetails />} />
       <Route path="/messages/:roomId" element={<ChatRoom />} />
       <Route path="/notifications" element={<Notifications />} />
