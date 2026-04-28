@@ -48,7 +48,7 @@ const Blogs = () => {
         <div className="px-5 pt-6">
           <h1 className="text-lg font-bold text-navy">Blogs</h1>
           <p className="text-[12px] text-gray-600">
-            Explore stories, ideas & tips from Sindhuurra
+            Explore stories, ideas & tips from Sindhuura
           </p>
         </div>
 
@@ -122,7 +122,7 @@ const Blogs = () => {
             <p className="text-[12px] text-gray-500 mt-1 leading-snug max-w-xs">
               {error
                 ? "Looks like our servers are taking a short break. Please check back soon."
-                : "Check back later for new stories from the Sindhuurra team."}
+                : "Check back later for new stories from the Sindhuura team."}
             </p>
           </div>
         )}

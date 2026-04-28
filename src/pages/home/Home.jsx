@@ -371,7 +371,7 @@ if (orderRes?.status === false) {
         order_id: orderId,
         // amount: amountPaise,
         currency,
-        name: "Sindhuurra",
+        name: "Sindhuura",
         description: `${plan?.name || "Subscription"} plan`,
         prefill: {
           name: userProfile?.user?.name || "",
@@ -1015,7 +1015,7 @@ const RegularHomeSections = ({
           <div>
             <h2 className="text-sm font-semibold text-navy">Upcoming Events</h2>
             <p className="text-[11px] mt-1 text-gray-500">
-              Discover exclusive Sindhuurra meet‑ups & experiences
+              Discover exclusive Sindhuura meet‑ups & experiences
             </p>
           </div>
         </div>
@@ -1124,7 +1124,7 @@ const RegularHomeSections = ({
               Happy Success Stories
             </h2>
             <p className="text-[11px] mt-1 text-gray-500">
-              Couples who found love through Sindhuurra
+              Couples who found love through Sindhuura
             </p>
           </div>
         </div>

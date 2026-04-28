@@ -58,7 +58,7 @@ const WelcomeScr = () => {
           Welcome <span className="font-semibold text-primary">{uniqueId}</span> 🎉
         </h1>
         <h2 className="text-base font-semibold text-navy mb-4 mt-4">
-          Here's the Sindhuurra Circle that helps people find their perfect match
+          Here's the Sindhuura Circle that helps people find their perfect match
         </h2>
 
         {/* Mantra points */}
@@ -103,7 +103,7 @@ const WelcomeScr = () => {
               <p className="text-[12px] font-medium text-navy">
                 Nethraa Soranagi
               </p>
-              <p className="text-[10px] text-gray-500">Founder, Sindhuurra</p>
+              <p className="text-[10px] text-gray-500">Founder, Sindhuura</p>
             </div>
           </div>
         </div>
